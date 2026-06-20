@@ -1,0 +1,179 @@
+@import "tailwindcss";
+
+/* ──────────────────────────────────────────────────────────────────────────
+   NeuraWeb Connected Suite — design tokens (Tailwind v4, CSS-first @theme)
+   Palette source of truth: project/tailwind.config.ts
+   ────────────────────────────────────────────────────────────────────────── */
+@theme {
+  /* Navy — fond sombre des back-offices */
+  --color-navy-700: #1e3a6b;
+  --color-navy-800: #1e2a4a;
+  --color-navy-900: #0e1b3d;
+  --color-navy-950: #070f26;
+
+  /* Accents marque (override volontaire des défauts sky/cyan, hex officiels) */
+  --color-sky-400: #5db8f0;
+  --color-cyan-500: #22d3ee;
+
+  /* CTA chaud / succès / fonds clairs */
+  --color-coral: #ff7a59;
+  --color-coral-soft: #ffb088;
+  --color-lime: #c5f277;
+  --color-surface: #f7fafd;
+  --color-frost: #e8f4fd;
+
+  /* Typo */
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-sora), system-ui, sans-serif;
+
+  /* Animations */
+  --animate-shimmer: shimmer 2.2s linear infinite;
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-coral) 60%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Base
+   ────────────────────────────────────────────────────────────────────────── */
+* {
+  border-color: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-navy-950);
+  color: #e8eefb;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-cyan-500) 35%, transparent);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-sky-400);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Scrollbars discrètes */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-sky-400) 40%, transparent) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-sky-400) 35%, transparent);
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--color-sky-400) 60%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Utilitaires marque
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Dégradé signature texte */
+.text-gradient {
+  background-image: linear-gradient(120deg, var(--color-sky-400), var(--color-cyan-500));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Carte verre dépoli sur fond sombre */
+.glass {
+  background: color-mix(in srgb, var(--color-navy-900) 70%, transparent);
+  backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in srgb, #fff 8%, transparent);
+}
+
+/* Fond quadrillé discret (back-office) */
+.bg-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, #fff 4%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, #fff 4%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Halo flouté décoratif */
+.halo {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Skeleton / shimmer */
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, #fff 4%, transparent) 25%,
+    color-mix(in srgb, #fff 12%, transparent) 50%,
+    color-mix(in srgb, #fff 4%, transparent) 75%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+/* Masque le bandeau démo de l'impression */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

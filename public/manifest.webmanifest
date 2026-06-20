@@ -1,0 +1,17 @@
+{
+  "name": "NeuraWeb Connected Suite",
+  "short_name": "NeuraWeb Suite",
+  "description": "Maquette interactive : back-office web et application mobile connectés en temps réel (collectivité, restaurant, hôtel). Données fictives.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#070F26",
+  "theme_color": "#070F26",
+  "lang": "fr",
+  "categories": ["business", "productivity"],
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
