@@ -47,6 +47,49 @@ export interface Report {
   y: number;
 }
 
+/* ── Propreté & déchets ──────────────────────────────────────────────────── */
+export type WasteKind = "poubelle_pleine" | "depot_sauvage" | "bris_verre" | "encombrants" | "autre_proprete";
+/** Priorité fixée par un agent de la mairie (qualification humaine, pas d'IA). */
+export type WastePriority = "urgente" | "moyenne" | "faible";
+export type WasteStatus = "nouveau" | "qualifie" | "planifie" | "en_cours" | "resolu";
+export type WasteFiliere = "collecte" | "recyclage" | "ressourcerie";
+/** Modération humaine des photos : hors-sujet ou délation (personnes) = rejet. */
+export type WasteModeration = "en_attente" | "validee" | "rejetee_hors_sujet" | "rejetee_delation";
+
+export interface WasteReport {
+  id: string;
+  ref: string; // PRO-xxxx
+  kind: WasteKind;
+  title: string;
+  address: string;
+  status: WasteStatus;
+  /** absente tant qu'un agent n'a pas qualifié le signalement */
+  priority?: WastePriority;
+  anonymous: boolean;
+  /** absent si signalement anonyme */
+  citizen?: string;
+  /** créé depuis cet appareil → suivi dans « Mes signalements » (même anonyme) */
+  mine?: boolean;
+  /** nombre de « +1 » d'autres citoyens (anti-doublons) */
+  confirmations: number;
+  assignedTo?: string;
+  /** position dans la tournée du jour (vue agent terrain) */
+  tourOrder?: number;
+  equipment: string[];
+  filiere?: WasteFiliere;
+  hasPhoto?: boolean;
+  /** photo du lieu propre jointe à la clôture */
+  photoAfter?: boolean;
+  moderation: WasteModeration;
+  /** distance fictive (m) pour le fil « Autour de moi » */
+  distanceM?: number;
+  /** position relative sur la mini-carte (0–100 %) */
+  x: number;
+  y: number;
+  createdAt: string;
+  resolvedAt?: string;
+}
+
 export type ReservationStatus = "demande" | "validee" | "refusee" | "annulee";
 export interface RoomBooking {
   id: string;

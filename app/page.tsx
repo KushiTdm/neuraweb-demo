@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "motion/react";
 import {
   ArrowRight,
+  ArrowLeft,
   Smartphone,
   Monitor,
   Zap,
@@ -19,6 +20,7 @@ import { Eyebrow } from "@/components/ui/primitives";
 import { VERTICAL_LIST } from "@/lib/verticals";
 import type { VerticalId } from "@/lib/types";
 import { openContact } from "@/lib/ui-store";
+import { NEURAWEB_URL } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 const CARD_IMG: Record<VerticalId, string> = {
@@ -57,13 +59,22 @@ export default function Launcher() {
       {/* nav */}
       <header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
         <Logo />
-        <button
-          onClick={() => openContact()}
-          className="inline-flex items-center gap-1.5 rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
-        >
-          Discuter de votre projet
-          <ArrowRight className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <a
+            href={NEURAWEB_URL}
+            className="hidden items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-white/70 transition hover:text-white sm:inline-flex"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            neuraweb.fr
+          </a>
+          <button
+            onClick={() => openContact()}
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/10"
+          >
+            Discuter de votre projet
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
       </header>
 
       {/* hero */}
@@ -211,7 +222,12 @@ export default function Launcher() {
             <RefreshCw className="h-3.5 w-3.5" />
             Maquette à but d'illustration — fonctionnalités simulées, données fictives.
           </p>
-          <p className="text-xs text-white/40">© NeuraWeb — Lille, partout en France.</p>
+          <a
+            href={NEURAWEB_URL}
+            className="text-xs text-white/40 transition hover:text-white"
+          >
+            © NeuraWeb — Lille, partout en France. · neuraweb.fr
+          </a>
         </div>
       </footer>
     </div>

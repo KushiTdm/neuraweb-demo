@@ -9,6 +9,7 @@ import { PresentationModeButton, PresentationCaption } from "./presentation-mode
 import { VerticalSwitcher } from "./vertical-switcher";
 import { VERTICALS } from "@/lib/verticals";
 import type { VerticalId } from "@/lib/types";
+import { NEURAWEB_URL } from "@/lib/site";
 
 function TopBar({ vertical }: { vertical: VerticalId }) {
   const v = VERTICALS[vertical];
@@ -20,7 +21,16 @@ function TopBar({ vertical }: { vertical: VerticalId }) {
         </Link>
         <div className="hidden sm:block"><Logo withTag={false} /></div>
         <VerticalSwitcher current={vertical} />
-        <div className="ml-auto"><PresentationModeButton vertical={vertical} /></div>
+        <div className="ml-auto flex items-center gap-2">
+          <a
+            href={NEURAWEB_URL}
+            className="hidden items-center gap-1.5 rounded-xl border border-white/12 bg-white/5 px-3 py-2 text-xs font-medium text-white/70 transition hover:border-sky-400/50 hover:text-white sm:inline-flex"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            neuraweb.fr
+          </a>
+          <PresentationModeButton vertical={vertical} />
+        </div>
       </div>
     </header>
   );

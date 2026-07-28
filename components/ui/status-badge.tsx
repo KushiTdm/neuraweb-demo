@@ -79,3 +79,15 @@ export const roomTone: Record<string, Tone> = {
   occupee: "info",
   menage: "progress",
 };
+export const wasteTone: Record<string, Tone> = {
+  nouveau: "warn",
+  qualifie: "info",
+  planifie: "progress",
+  en_cours: "progress",
+  resolu: "success",
+};
+export const wastePriorityTone: Record<string, Tone> = {
+  urgente: "danger",
+  moyenne: "progress",
+  faible: "neutral",
+};

@@ -4,36 +4,75 @@ import { useState } from "react";
 import { Send, Loader2, MailCheck, Sparkles } from "lucide-react";
 import { Modal } from "./modal";
 import { useUIStore } from "@/lib/ui-store";
-import { sleep } from "@/lib/utils";
 
-const SECTORS = ["Collectivité", "Restaurant", "Hôtel", "Autre"];
+/** Secteurs affichés → valeur envoyée à l'API (`demo_leads.sector`). */
+const SECTORS: { label: string; value: string }[] = [
+  { label: "Collectivité", value: "collectivite" },
+  { label: "Restaurant", value: "restaurant" },
+  { label: "Hôtel", value: "hotel" },
+  { label: "Autre", value: "general" },
+];
 
-/** Prise de contact mockée (fonctionnelle) — remplace les CTA « Discuter de votre projet ». */
+/** Formulaire de lead RÉEL — POST /api/lead (insert Supabase + e-mail Resend). */
 export function ContactDialog() {
   const open = useUIStore((s) => s.contactOpen);
   const context = useUIStore((s) => s.contactContext);
+  const source = useUIStore((s) => s.contactSource);
   const close = useUIStore((s) => s.closeContact);
 
-  const [sector, setSector] = useState("Collectivité");
+  const [sector, setSector] = useState("collectivite");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  // Honeypot anti-bot : rempli uniquement par des robots.
+  const [company, setCompany] = useState("");
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const reset = () => {
     setSent(false);
     setSending(false);
+    setError(null);
     setName("");
     setEmail("");
     setMessage("");
+    setCompany("");
   };
 
   const submit = async () => {
+    setError(null);
+    if (!name.trim() || !email.trim() || !message.trim()) {
+      setError("Merci de renseigner votre nom, votre e-mail et votre message.");
+      return;
+    }
     setSending(true);
-    await sleep(1100);
-    setSending(false);
-    setSent(true);
+    try {
+      const res = await fetch("/api/lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          message,
+          sector,
+          source: source ?? "contact",
+          context,
+          company, // honeypot
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data?.error || "L'envoi a échoué. Réessayez ou écrivez à contact@neuraweb.fr.");
+        setSending(false);
+        return;
+      }
+      setSending(false);
+      setSent(true);
+    } catch {
+      setError("Connexion impossible. Réessayez ou écrivez à contact@neuraweb.fr.");
+      setSending(false);
+    }
   };
 
   return (
@@ -52,10 +91,10 @@ export function ContactDialog() {
           <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-lime/15 text-lime">
             <MailCheck className="h-7 w-7" />
           </span>
-          <p className="mt-3 font-display text-lg font-semibold text-white">Message envoyé 🎉</p>
+          <p className="mt-3 font-display text-lg font-semibold text-white">Demande envoyée 🎉</p>
           <p className="mt-1 text-sm text-white/55">
-            Merci {name || ""} ! Un expert NeuraWeb vous recontacterait sous 24 h (démonstration — aucun
-            message réel n'est transmis).
+            Merci {name || ""} ! Votre demande a bien été transmise à l'équipe NeuraWeb. Un expert
+            vous recontacte sous 24 h à l'adresse indiquée.
           </p>
           <button
             onClick={() => {
@@ -79,13 +118,13 @@ export function ContactDialog() {
             <div className="flex flex-wrap gap-1.5">
               {SECTORS.map((s) => (
                 <button
-                  key={s}
-                  onClick={() => setSector(s)}
+                  key={s.value}
+                  onClick={() => setSector(s.value)}
                   className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
-                    sector === s ? "bg-sky-400/20 text-sky-200 ring-1 ring-sky-400/40" : "bg-white/5 text-white/55 hover:text-white"
+                    sector === s.value ? "bg-sky-400/20 text-sky-200 ring-1 ring-sky-400/40" : "bg-white/5 text-white/55 hover:text-white"
                   }`}
                 >
-                  {s}
+                  {s.label}
                 </button>
               ))}
             </div>
@@ -95,6 +134,21 @@ export function ContactDialog() {
             <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Email" className="h-10 rounded-xl border border-white/12 bg-white/5 px-3 text-sm text-white placeholder:text-white/35 focus:border-sky-400/50 focus:outline-none" />
           </div>
           <textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={3} placeholder="Décrivez votre besoin…" className="w-full resize-none rounded-xl border border-white/12 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/35 focus:border-sky-400/50 focus:outline-none" />
+          {/* Honeypot anti-bot : invisible pour les humains. */}
+          <input
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+            className="hidden"
+            placeholder="Société"
+          />
+          {error && (
+            <p className="rounded-xl border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+              {error}
+            </p>
+          )}
           <button
             onClick={submit}
             disabled={sending}
@@ -102,7 +156,7 @@ export function ContactDialog() {
           >
             {sending ? <><Loader2 className="h-4 w-4 animate-spin" /> Envoi…</> : <><Send className="h-4 w-4" /> Envoyer ma demande</>}
           </button>
-          <p className="text-center text-[11px] text-white/35">Formulaire de démonstration — données non transmises.</p>
+          <p className="text-center text-[11px] text-white/35">Votre demande est transmise à l'équipe NeuraWeb — réponse sous 24 h.</p>
         </div>
       )}
     </Modal>

@@ -59,7 +59,7 @@ export const VERTICALS: Record<VerticalId, VerticalConfig> = {
     },
     appName: "Néauville & moi",
     adminName: "Console mairie",
-    features: ["Signalements citoyens", "Réservations municipales", "Démarches en ligne", "RGAA / RGPD"],
+    features: ["Propreté & déchets", "Signalements citoyens", "Réservations municipales", "Démarches en ligne"],
     clientSurface: "phone",
     clientLabel: "Application citoyenne",
   },
@@ -128,6 +128,42 @@ export const REPORT_STATUS_LABEL = {
   recu: "Reçu",
   en_cours: "En cours",
   resolu: "Résolu",
+} as const;
+
+export const WASTE_KIND_LABEL = {
+  poubelle_pleine: "Poubelle pleine",
+  depot_sauvage: "Dépôt sauvage",
+  bris_verre: "Bris de verre",
+  encombrants: "Encombrants",
+  autre_proprete: "Autre propreté",
+} as const;
+
+export const WASTE_KIND_EMOJI = {
+  poubelle_pleine: "🗑️",
+  depot_sauvage: "🛋️",
+  bris_verre: "🍾",
+  encombrants: "📦",
+  autre_proprete: "🚮",
+} as const;
+
+export const WASTE_STATUS_LABEL = {
+  nouveau: "Nouveau",
+  qualifie: "Qualifié",
+  planifie: "Planifié",
+  en_cours: "En cours",
+  resolu: "Résolu",
+} as const;
+
+export const WASTE_PRIORITY_LABEL = {
+  urgente: "Urgent",
+  moyenne: "Moyen",
+  faible: "Faible",
+} as const;
+
+export const WASTE_FILIERE_LABEL = {
+  collecte: "Collecte classique",
+  recyclage: "Filière recyclage",
+  ressourcerie: "Ressourcerie",
 } as const;
 
 export const ORDER_STATUS_LABEL = {

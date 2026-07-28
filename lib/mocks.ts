@@ -12,6 +12,8 @@ import type {
   RoomBooking,
   ServiceRequest,
   TableBooking,
+  WasteKind,
+  WasteReport,
 } from "./types";
 
 /* ── Démarches : modèles à télécharger & justificatifs à fournir par type ──── */
@@ -46,8 +48,38 @@ export function procedureRef(type: string): string {
   return `${prefix}-${100 + Math.floor(Math.random() * 9000)}`;
 }
 
+/* ── Propreté & déchets : matériel conseillé et points noirs (comptage) ───── */
+/** Checklist matériel pré-cochée selon le type — l'agent reste libre de l'ajuster. */
+export const EQUIPMENT_BY_KIND: Record<WasteKind, string[]> = {
+  poubelle_pleine: ["Gants", "Sacs de collecte", "Pince de préhension"],
+  depot_sauvage: ["Gants renforcés", "Pelle", "Benne mobile", "Sangles"],
+  bris_verre: ["Gants anti-coupure", "Pelle & balayette", "Bac à verre", "Panneau de signalisation"],
+  encombrants: ["Gants", "Diable", "Camion plateau", "Sangles"],
+  autre_proprete: ["Gants", "Sacs de collecte", "Balayeuse"],
+};
+
+/** Points noirs identifiés par simple comptage (≥ 3 signalements au même endroit). */
+export interface WasteBlackspot {
+  place: string;
+  count90d: number;
+  mainKind: WasteKind;
+  suggestion: string;
+  context?: string;
+  x: number;
+  y: number;
+}
+export const WASTE_BLACKSPOTS: WasteBlackspot[] = [
+  { place: "Square Voltaire", count90d: 14, mainKind: "bris_verre", suggestion: "Installer une benne à verre", context: "Rassemblements le week-end", x: 44, y: 72 },
+  { place: "Chemin du Parc", count90d: 9, mainKind: "depot_sauvage", suggestion: "Panneau pédagogique + passage hebdomadaire", context: "Zone peu passante", x: 70, y: 62 },
+  { place: "Place du Marché", count90d: 7, mainKind: "poubelle_pleine", suggestion: "Tournée supplémentaire le samedi", context: "Jour de marché", x: 58, y: 30 },
+];
+
+/** Signalements propreté par semaine (8 dernières semaines) — lecture humaine, pas de ML. */
+export const WASTE_WEEKLY_TREND = [12, 9, 14, 11, 8, 10, 7, 6];
+
 export interface DemoSeed {
   reports: Report[];
+  wasteReports: WasteReport[];
   roomBookings: RoomBooking[];
   procedures: Procedure[];
   orders: Order[];
@@ -72,6 +104,24 @@ export function makeSeed(): DemoSeed {
       { id: uid("rep"), ref: "SIG-2045", title: "Trottoir affaissé", category: "voirie", address: "8 avenue de la Gare", status: "recu", priority: "moyenne", citizen: "Léa Marchand", createdAt: isoFromNow(-330), x: 22, y: 24 },
       { id: uid("rep"), ref: "SIG-2046", title: "Tags sur mur municipal", category: "proprete", address: "Gymnase Jean Moulin", status: "en_cours", priority: "basse", citizen: "Hugo Faure", createdAt: isoFromNow(-540), assignedTo: "Propreté urbaine", x: 80, y: 40 },
       { id: uid("rep"), ref: "SIG-2047", title: "Arbre menaçant de tomber", category: "espaces_verts", address: "Allée des Tilleuls", status: "nouveau", priority: "haute", citizen: "Nadia Cherif", createdAt: isoFromNow(-8), hasPhoto: true, x: 50, y: 52 },
+    ],
+    wasteReports: [
+      // À qualifier par un agent (l'œil humain fixe la priorité — pas d'IA)
+      { id: uid("was"), ref: "PRO-1204", kind: "bris_verre", title: "Verre brisé sur la piste cyclable", address: "Avenue de la Gare", status: "nouveau", anonymous: false, citizen: "Léa Marchand", confirmations: 2, equipment: [], hasPhoto: true, moderation: "validee", distanceM: 210, x: 24, y: 26, createdAt: isoFromNow(-25) },
+      { id: uid("was"), ref: "PRO-1203", kind: "poubelle_pleine", title: "Poubelle qui déborde côté jeux", address: "Square Voltaire", status: "nouveau", anonymous: true, confirmations: 3, equipment: [], hasPhoto: true, moderation: "validee", distanceM: 450, x: 45, y: 70, createdAt: isoFromNow(-70) },
+      // Qualifiés / planifiés / en cours
+      { id: uid("was"), ref: "PRO-1201", kind: "depot_sauvage", title: "Matelas et gravats abandonnés", address: "Chemin du Parc", status: "qualifie", priority: "moyenne", anonymous: true, confirmations: 4, equipment: EQUIPMENT_BY_KIND.depot_sauvage, hasPhoto: true, moderation: "validee", distanceM: 800, x: 70, y: 60, createdAt: isoFromNow(-200) },
+      { id: uid("was"), ref: "PRO-1199", kind: "encombrants", title: "Canapé laissé sur le trottoir", address: "12 rue des Lilas", status: "qualifie", priority: "faible", anonymous: false, citizen: "Marc Dubois", confirmations: 0, equipment: EQUIPMENT_BY_KIND.encombrants, filiere: "ressourcerie", hasPhoto: true, moderation: "validee", distanceM: 350, x: 33, y: 45, createdAt: isoFromNow(-460) },
+      { id: uid("was"), ref: "PRO-1198", kind: "depot_sauvage", title: "Sacs éventrés près des conteneurs", address: "Gymnase Jean Moulin", status: "en_cours", priority: "moyenne", anonymous: false, citizen: "Hugo Faure", confirmations: 1, assignedTo: "Tournée propreté A", tourOrder: 1, equipment: EQUIPMENT_BY_KIND.depot_sauvage, hasPhoto: true, moderation: "validee", distanceM: 1200, x: 79, y: 42, createdAt: isoFromNow(-540) },
+      { id: uid("was"), ref: "PRO-1197", kind: "poubelle_pleine", title: "Corbeille pleine arrêt Mairie", address: "Place du Beffroi", status: "planifie", priority: "faible", anonymous: true, confirmations: 1, assignedTo: "Tournée propreté A", tourOrder: 2, equipment: EQUIPMENT_BY_KIND.poubelle_pleine, hasPhoto: true, moderation: "validee", distanceM: 600, x: 52, y: 38, createdAt: isoFromNow(-720) },
+      // Résolu avec photo « après » (preuve du lieu propre)
+      { id: uid("was"), ref: "PRO-1190", kind: "bris_verre", title: "Bouteilles cassées à l'arrêt de bus", address: "Place du Marché", status: "resolu", priority: "urgente", anonymous: false, citizen: "Sophie Lambert", confirmations: 2, assignedTo: "Régie propreté", equipment: EQUIPMENT_BY_KIND.bris_verre, hasPhoto: true, photoAfter: true, moderation: "validee", distanceM: 500, x: 58, y: 31, createdAt: isoFromNow(-2800), resolvedAt: isoFromNow(-2650) },
+      // File de modération humaine (photos à vérifier avant publication)
+      { id: uid("was"), ref: "PRO-1205", kind: "autre_proprete", title: "Déjections canines allée centrale", address: "Allée des Tilleuls", status: "nouveau", anonymous: true, confirmations: 0, equipment: [], hasPhoto: true, moderation: "en_attente", distanceM: 300, x: 49, y: 54, createdAt: isoFromNow(-15) },
+      { id: uid("was"), ref: "PRO-1206", kind: "depot_sauvage", title: "Photo floue — contenu à vérifier", address: "Rue de la Filature", status: "nouveau", anonymous: true, confirmations: 0, equipment: [], hasPhoto: true, moderation: "en_attente", distanceM: 900, x: 18, y: 60, createdAt: isoFromNow(-8) },
+      // Exemples rejetés (pédagogie RGPD) : hors-sujet et anti-délation
+      { id: uid("was"), ref: "PRO-1192", kind: "autre_proprete", title: "Photo d'un chat sur un muret", address: "Rue des Lilas", status: "nouveau", anonymous: true, confirmations: 0, equipment: [], hasPhoto: true, moderation: "rejetee_hors_sujet", x: 30, y: 50, createdAt: isoFromNow(-1300) },
+      { id: uid("was"), ref: "PRO-1191", kind: "depot_sauvage", title: "« Mon voisin sort ses sacs le mardi »", address: "7 impasse des Rosiers", status: "nouveau", anonymous: false, citizen: "Anonyme refusé", confirmations: 0, equipment: [], hasPhoto: true, moderation: "rejetee_delation", x: 62, y: 48, createdAt: isoFromNow(-1500) },
     ],
     roomBookings: [
       // Réservations de l'usager démo (gérables depuis l'app : modifier / annuler)

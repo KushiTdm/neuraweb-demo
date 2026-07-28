@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Home,
   Camera,
@@ -27,17 +27,22 @@ import {
   CalendarClock,
   AlertCircle,
   Clock,
+  ThumbsUp,
+  ShieldCheck,
+  Recycle,
+  Leaf,
 } from "lucide-react";
 import { AppShell, AppSection, AppCard, type AppTab } from "@/components/app-shell";
+import { RealMap, NEAUVILLE_CENTER, latLngToXY } from "@/components/real-map";
 import { Thumb } from "@/components/asset-image";
 import { DemoLink } from "@/components/demo-link";
 import { LightSheet } from "@/components/light-sheet";
-import { StatusBadge } from "@/components/ui/status-badge";
+import { StatusBadge, wasteTone } from "@/components/ui/status-badge";
 import { RelativeTime } from "@/components/relative-time";
 import { useDemoStore } from "@/lib/store";
 import { toast } from "@/lib/ui-store";
-import { RESERVATION_STATUS_LABEL } from "@/lib/verticals";
-import type { Procedure, ProcedureStatus, ReportCategory, ReportStatus, RoomBooking } from "@/lib/types";
+import { RESERVATION_STATUS_LABEL, WASTE_KIND_EMOJI, WASTE_KIND_LABEL, WASTE_STATUS_LABEL } from "@/lib/verticals";
+import type { Procedure, ProcedureStatus, ReportCategory, ReportStatus, RoomBooking, WasteKind, WasteStatus } from "@/lib/types";
 import { cn, shortDate, sleep } from "@/lib/utils";
 
 /* ── Données de démonstration (contenus éditoriaux) ──────────────────────── */
@@ -87,7 +92,33 @@ const CATEGORIES: { key: ReportCategory; label: string; emoji: string }[] = [
   { key: "espaces_verts", label: "Espaces verts", emoji: "🌳" },
 ];
 
+/* ── Propreté & déchets : types proposés au citoyen (il choisit lui-même) ── */
+const WASTE_TYPES = (Object.keys(WASTE_KIND_LABEL) as WasteKind[]).map((key) => ({
+  key,
+  label: WASTE_KIND_LABEL[key],
+  emoji: WASTE_KIND_EMOJI[key],
+}));
+
+/** Nudges pédagogiques affichés après l'envoi (sensibilisation douce). */
+const ECO_NUDGE: Record<WasteKind, string> = {
+  poubelle_pleine: "Une corbeille qui déborde multiplie par 3 les dépôts au sol autour d'elle. Votre signalement casse l'effet boule de neige.",
+  depot_sauvage: "Un dépôt sauvage en attire d'autres en moins de 48 h. Le signaler tôt, c'est éviter une décharge improvisée.",
+  bris_verre: "Une bouteille en verre met près de 4 000 ans à se dégrader dans la nature — et blesse promeneurs et animaux bien avant.",
+  encombrants: "Ce meuble peut avoir une seconde vie : réparé et revendu à petit prix par la ressourcerie, il ne finira pas enfoui.",
+  autre_proprete: "Un simple mégot pollue jusqu'à 500 litres d'eau et met 12 ans à disparaître. Chaque geste compte.",
+};
+
 type LightStep = { label: string; state: "done" | "current" | "todo" };
+
+function wasteSteps(status: WasteStatus): LightStep[] {
+  const order: WasteStatus[] = ["nouveau", "qualifie", "planifie", "en_cours", "resolu"];
+  const idx = order.indexOf(status);
+  const labels = ["Signalement envoyé", "Qualifié par un agent", "Intervention planifiée", "Équipe sur place", "Résolu (photo à l'appui)"];
+  return order.map((_, i) => ({
+    label: labels[i],
+    state: i < idx ? "done" : i === idx ? (status === "resolu" ? "done" : "current") : "todo",
+  }));
+}
 
 function reportSteps(status: ReportStatus): LightStep[] {
   const order: ReportStatus[] = ["nouveau", "recu", "en_cours", "resolu"];
@@ -343,7 +374,347 @@ function Accueil({ onGo }: { onGo: (t: string) => void }) {
 }
 
 /* ── Signaler (connecté) ─────────────────────────────────────────────────── */
+/* ── Signaler : module Propreté & déchets ────────────────────────────────── */
 function Signaler({ onTrack }: { onTrack: () => void }) {
+  const [view, setView] = useState<"hub" | "flow" | "autre">("hub");
+  const [kind, setKind] = useState<WasteKind>("depot_sauvage");
+  const [doneId, setDoneId] = useState<string | null>(null);
+
+  if (doneId) return <WasteDone id={doneId} onNew={() => { setDoneId(null); setView("hub"); }} onTrack={onTrack} />;
+  if (view === "flow") return <WasteFlow kind={kind} onBack={() => setView("hub")} onDone={setDoneId} />;
+  if (view === "autre") return <SignalerAutre onBack={() => setView("hub")} onTrack={onTrack} />;
+
+  return (
+    <div className="px-4 py-4">
+      <h2 className="font-display text-lg font-bold text-navy-900">Signaler un problème</h2>
+      <p className="text-sm text-navy-500">Photo → position GPS → envoi : 3 étapes, moins d'une minute.</p>
+
+      <p className="mb-2 mt-4 text-xs font-semibold uppercase tracking-wide text-navy-400">Propreté & déchets</p>
+      <div className="grid grid-cols-3 gap-1.5">
+        {WASTE_TYPES.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => { setKind(t.key); setView("flow"); }}
+            className="flex flex-col items-center gap-1 rounded-2xl border border-navy-900/10 bg-white py-3 transition active:scale-95"
+          >
+            <span className="text-2xl">{t.emoji}</span>
+            <span className="px-1 text-center text-[10px] font-medium leading-tight text-navy-700">{t.label}</span>
+          </button>
+        ))}
+        <button
+          onClick={() => setView("autre")}
+          className="flex flex-col items-center gap-1 rounded-2xl border border-dashed border-navy-900/15 bg-white py-3 transition active:scale-95"
+        >
+          <span className="text-2xl">🛠️</span>
+          <span className="px-1 text-center text-[10px] font-medium leading-tight text-navy-500">Autre (voirie, éclairage…)</span>
+        </button>
+      </div>
+
+      <AutourDeMoi />
+
+      <p className="mt-4 flex items-start gap-1.5 text-[11px] leading-snug text-navy-400">
+        <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        Position arrondie, données EXIF supprimées, photos vérifiées par un agent. Seuls les déchets et incidents matériels sont acceptés — jamais les personnes.
+      </p>
+    </div>
+  );
+}
+
+/** Fil « Autour de moi » : incidents proches déjà signalés — un « +1 » vaut mieux qu'un doublon. */
+function AutourDeMoi() {
+  const wasteReports = useDemoStore((s) => s.wasteReports);
+  const confirmWasteReport = useDemoStore((s) => s.confirmWasteReport);
+  const [confirmed, setConfirmed] = useState<string[]>([]);
+
+  const nearby = wasteReports.filter((w) => w.moderation === "validee" && w.status !== "resolu").slice(0, 4);
+  if (nearby.length === 0) return null;
+
+  return (
+    <div className="mt-5">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-navy-400">Autour de moi — déjà signalés</p>
+      <div className="space-y-2">
+        {nearby.map((w) => {
+          const done = confirmed.includes(w.id);
+          return (
+            <AppCard key={w.id} className="flex items-center gap-2.5">
+              <span className="text-xl">{WASTE_KIND_EMOJI[w.kind]}</span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-navy-900">{w.title}</p>
+                <p className="truncate text-xs text-navy-500">
+                  {w.address}{w.distanceM ? ` · à ${w.distanceM} m` : ""}
+                </p>
+              </div>
+              <StatusBadge tone={wasteTone[w.status]}>{WASTE_STATUS_LABEL[w.status]}</StatusBadge>
+              <button
+                onClick={() => { confirmWasteReport(w.id); setConfirmed((c) => [...c, w.id]); toast("Merci ! Signalement confirmé — inutile d'en créer un doublon 👍", "success"); }}
+                disabled={done}
+                aria-label={`Confirmer le signalement ${w.ref}`}
+                className={cn(
+                  "flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1.5 text-xs font-semibold transition",
+                  done ? "bg-lime/20 text-[#3f6212]" : "bg-indigo-50 text-indigo-700 active:scale-95",
+                )}
+              >
+                <ThumbsUp className="h-3.5 w-3.5" /> {done ? `+${w.confirmations}` : "+1"}
+              </button>
+            </AppCard>
+          );
+        })}
+      </div>
+      <p className="mt-2 text-[11px] text-navy-400">💡 Un problème déjà signalé ? Votre « +1 » le fait remonter dans la file de la mairie.</p>
+    </div>
+  );
+}
+
+/** Parcours de signalement en 3 étapes : Photo → Position → Envoi. */
+function WasteFlow({ kind, onBack, onDone }: { kind: WasteKind; onBack: () => void; onDone: (id: string) => void }) {
+  const createWasteReport = useDemoStore((s) => s.createWasteReport);
+  const [step, setStep] = useState(1);
+  const [photo, setPhoto] = useState(false);
+  const [address, setAddress] = useState("");
+  const [located, setLocated] = useState(false);
+  const [pos, setPos] = useState<{ lat: number; lng: number } | null>(null);
+  const [desc, setDesc] = useState("");
+  const [anonymous, setAnonymous] = useState(true);
+  const locating = step === 2 && !located;
+
+  // Étape 2 : géolocalisation automatique (simulée) dès l'arrivée sur l'écran
+  useEffect(() => {
+    if (step !== 2 || located) return;
+    let live = true;
+    sleep(900).then(() => {
+      if (!live) return;
+      setAddress("Square Voltaire, côté aire de jeux");
+      setPos({ lat: NEAUVILLE_CENTER.lat - 0.0016, lng: NEAUVILLE_CENTER.lng + 0.0011 });
+      setLocated(true);
+    });
+    return () => { live = false; };
+  }, [step, located]);
+
+  const submit = () => {
+    const id = createWasteReport({
+      kind,
+      title: desc,
+      address: address.trim() || "Position GPS approximative",
+      anonymous,
+      ...(pos ? latLngToXY(pos.lat, pos.lng) : {}),
+    });
+    onDone(id);
+  };
+
+  return (
+    <div className="px-4 py-4">
+      <div className="flex items-center gap-2">
+        <button onClick={step === 1 ? onBack : () => setStep(step - 1)} aria-label="Retour" className="flex h-8 w-8 items-center justify-center rounded-full bg-navy-900/5 text-navy-600">
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        <span className="text-xl">{WASTE_KIND_EMOJI[kind]}</span>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-navy-900">{WASTE_KIND_LABEL[kind]}</p>
+          <p className="text-[11px] text-navy-400">Étape {step} sur 3</p>
+        </div>
+      </div>
+
+      <div className="mt-3 flex gap-1.5">
+        {["Photo", "Position", "Envoi"].map((label, i) => (
+          <span key={label} className={cn("h-1.5 flex-1 rounded-full", i < step ? "bg-indigo-500" : "bg-navy-900/10")} />
+        ))}
+      </div>
+
+      {step === 1 && (
+        <>
+          <p className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-navy-400">1 · Prenez une photo</p>
+          <button
+            onClick={() => setPhoto((p) => !p)}
+            className={cn(
+              "flex h-36 w-full items-center justify-center rounded-2xl border-2 border-dashed transition",
+              photo ? "border-indigo-400 bg-gradient-to-br from-indigo-100 to-sky-100" : "border-navy-900/15 bg-white",
+            )}
+          >
+            {photo ? (
+              <span className="relative block h-full w-full overflow-hidden rounded-xl">
+                <Thumb name="signalement-exemple" alt="Photo du déchet signalé" className="absolute inset-0" sizes="400px" />
+                <span className="absolute bottom-1.5 left-1.5 inline-flex items-center gap-1 rounded-full bg-navy-950/70 px-2 py-0.5 text-xs font-medium text-white">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-lime" /> Photo ajoutée
+                </span>
+              </span>
+            ) : (
+              <span className="flex flex-col items-center gap-1 text-navy-400">
+                <Camera className="h-6 w-6" /> <span className="text-xs">Prendre une photo</span>
+              </span>
+            )}
+          </button>
+          <p className="mt-2 text-[11px] text-navy-400">La photo aide l'agent de la mairie à évaluer la situation et à prévoir le bon matériel.</p>
+          <button
+            onClick={() => setStep(2)}
+            disabled={!photo}
+            className={cn(
+              "mt-4 w-full rounded-xl py-3 text-sm font-semibold text-white transition",
+              photo ? "bg-gradient-to-r from-indigo-600 to-sky-500 shadow-lg shadow-indigo-500/25" : "bg-navy-300",
+            )}
+          >
+            Continuer
+          </button>
+        </>
+      )}
+
+      {step === 2 && (
+        <>
+          <p className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-navy-400">2 · Position détectée</p>
+          {locating ? (
+            <div className="flex h-40 items-center justify-center rounded-2xl border border-navy-900/10 bg-white">
+              <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
+            </div>
+          ) : (
+            <RealMap
+              className="h-40 overflow-hidden rounded-2xl border border-navy-900/10"
+              center={pos ?? NEAUVILLE_CENTER}
+              zoom={16}
+              pin={pos}
+              onPick={(p) => {
+                setPos(p);
+                setAddress(`Position ajustée (${p.lat.toFixed(4)}, ${p.lng.toFixed(4)})`);
+              }}
+            />
+          )}
+          <input
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            placeholder={locating ? "Localisation en cours…" : "Adresse du problème"}
+            className="mt-3 h-10 w-full rounded-xl border border-navy-900/12 bg-white px-3 text-sm text-navy-900 placeholder:text-navy-300 focus:border-indigo-400 focus:outline-none"
+          />
+          <p className="mt-2 text-[11px] text-navy-400">📍 Carte interactive : touchez pour ajuster l'épingle. Position arrondie — votre domicile n'est jamais transmis.</p>
+          <button
+            onClick={() => setStep(3)}
+            disabled={locating}
+            className={cn(
+              "mt-4 w-full rounded-xl py-3 text-sm font-semibold text-white transition",
+              !locating ? "bg-gradient-to-r from-indigo-600 to-sky-500 shadow-lg shadow-indigo-500/25" : "bg-navy-300",
+            )}
+          >
+            Continuer
+          </button>
+        </>
+      )}
+
+      {step === 3 && (
+        <>
+          <p className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-navy-400">3 · Vérifiez et envoyez</p>
+          <AppCard>
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl">{WASTE_KIND_EMOJI[kind]}</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-navy-900">{WASTE_KIND_LABEL[kind]}</p>
+                <p className="truncate text-xs text-navy-500">{address || "Position GPS approximative"}</p>
+              </div>
+              <span className="inline-flex items-center gap-1 rounded-full bg-lime/15 px-2 py-0.5 text-[11px] font-medium" style={{ color: "#3f6212" }}>
+                <Camera className="h-3 w-3" /> 1 photo
+              </span>
+            </div>
+          </AppCard>
+          <textarea
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+            placeholder="Précision utile à l'équipe (optionnel)"
+            rows={2}
+            className="mt-3 w-full resize-none rounded-xl border border-navy-900/12 bg-white px-3 py-2 text-sm text-navy-900 placeholder:text-navy-300 focus:border-indigo-400 focus:outline-none"
+          />
+          <button
+            onClick={() => setAnonymous((a) => !a)}
+            role="switch"
+            aria-checked={anonymous}
+            className="mt-3 flex w-full items-center gap-2.5 rounded-xl border border-navy-900/10 bg-white px-3 py-2.5 text-left"
+          >
+            <span className={cn("flex h-5 w-9 shrink-0 items-center rounded-full p-0.5 transition", anonymous ? "bg-indigo-600" : "bg-navy-200")}>
+              <span className={cn("h-4 w-4 rounded-full bg-white shadow transition", anonymous && "translate-x-4")} />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-navy-900">Signaler anonymement</span>
+              <span className="block text-[11px] leading-snug text-navy-400">Aucun compte requis — la mairie ne voit pas votre nom. Le suivi reste disponible sur cet appareil dans « Démarches ».</span>
+            </span>
+          </button>
+          <p className="mt-3 flex items-start gap-1.5 text-[11px] leading-snug text-navy-400">
+            <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            Photo vérifiée par un agent avant publication. Données conservées le temps du traitement (RGPD).
+          </p>
+          <button onClick={submit} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-sky-500 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/25">
+            <Send className="h-4 w-4" /> Envoyer le signalement
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** Écran de confirmation : suivi en direct + nudge éco + filière de valorisation. */
+function WasteDone({ id, onNew, onTrack }: { id: string; onNew: () => void; onTrack: () => void }) {
+  const report = useDemoStore((s) => s.wasteReports.find((w) => w.id === id));
+  if (!report) return null;
+
+  return (
+    <div className="px-4 py-5">
+      <div className="flex flex-col items-center text-center">
+        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-lime/20" style={{ color: "#3f6212" }}>
+          <CheckCircle2 className="h-8 w-8" />
+        </span>
+        <h2 className="mt-3 font-display text-lg font-bold text-navy-900">Signalement envoyé !</h2>
+        <p className="mt-1 text-sm text-navy-500">
+          Référence {report.ref} — transmis à la mairie en temps réel{report.anonymous ? ", en anonyme" : ""}.
+        </p>
+      </div>
+
+      <AppCard className="mt-5">
+        <p className="mb-3 text-sm font-semibold text-navy-900">Suivi en direct</p>
+        <LightSteps steps={wasteSteps(report.status)} />
+        {report.status === "resolu" && report.photoAfter && (
+          <div className="mt-3 flex items-center gap-2 rounded-xl bg-gradient-to-r from-lime/20 to-emerald-100 px-3 py-2.5">
+            <Camera className="h-4 w-4 shrink-0" style={{ color: "#3f6212" }} />
+            <p className="text-xs font-medium" style={{ color: "#3f6212" }}>Photo « après » disponible : le lieu est propre. Merci ! 🌱</p>
+          </div>
+        )}
+      </AppCard>
+
+      <AppCard className="mt-3 border-emerald-200 bg-emerald-50/60">
+        <div className="flex gap-2.5">
+          <Leaf className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+          <p className="text-xs leading-relaxed text-emerald-900">{ECO_NUDGE[report.kind]}</p>
+        </div>
+      </AppCard>
+
+      {report.kind === "encombrants" && (
+        <AppCard className="mt-3">
+          <div className="flex items-start gap-2.5">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700"><Recycle className="h-4.5 w-4.5" /></span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-navy-900">La Ressourcerie du Beffroi</p>
+              <p className="mt-0.5 text-xs leading-snug text-navy-500">Collecte gratuitement les meubles et objets réutilisables à domicile, sous 5 jours.</p>
+              <button
+                onClick={() => toast("Demande transmise à la ressourcerie ♻️ (démo)", "success")}
+                className="mt-2 rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white active:scale-95"
+              >
+                Demander une collecte
+              </button>
+            </div>
+          </div>
+        </AppCard>
+      )}
+
+      <p className="mt-3 text-center text-xs text-navy-400">
+        💡 Côté console mairie, qualifiez puis clôturez : le suivi ci-dessus avance tout seul.
+      </p>
+      <div className="mt-4 flex gap-2">
+        <button onClick={onNew} className="flex-1 rounded-xl border border-navy-900/15 py-2.5 text-sm font-medium text-navy-700">
+          Nouveau signalement
+        </button>
+        <button onClick={onTrack} className="flex-1 rounded-xl bg-indigo-600 py-2.5 text-sm font-medium text-white">
+          Mes démarches
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Signalement « autre » (voirie, éclairage, espaces verts…) ───────────── */
+function SignalerAutre({ onTrack, onBack }: { onTrack: () => void; onBack: () => void }) {
   const createReport = useDemoStore((s) => s.createReport);
   const reports = useDemoStore((s) => s.reports);
   const [cat, setCat] = useState<ReportCategory>("voirie");
@@ -399,8 +770,15 @@ function Signaler({ onTrack }: { onTrack: () => void }) {
 
   return (
     <div className="px-4 py-4">
-      <h2 className="font-display text-lg font-bold text-navy-900">Signaler un problème</h2>
-      <p className="text-sm text-navy-500">Quelques secondes suffisent.</p>
+      <div className="flex items-center gap-2">
+        <button onClick={onBack} aria-label="Retour" className="flex h-8 w-8 items-center justify-center rounded-full bg-navy-900/5 text-navy-600">
+          <ArrowLeft className="h-4 w-4" />
+        </button>
+        <div>
+          <h2 className="font-display text-lg font-bold text-navy-900">Autre signalement</h2>
+          <p className="text-sm text-navy-500">Voirie, éclairage, espaces verts…</p>
+        </div>
+      </div>
 
       <p className="mb-2 mt-4 text-xs font-semibold uppercase tracking-wide text-navy-400">Catégorie</p>
       <div className="grid grid-cols-4 gap-1.5">
@@ -479,22 +857,49 @@ const isMine = (citizen: string) => citizen.includes("Vous") || citizen.includes
 
 function Demarches() {
   const reports = useDemoStore((s) => s.reports);
+  const wasteReports = useDemoStore((s) => s.wasteReports);
   const procedures = useDemoStore((s) => s.procedures);
   const createProcedure = useDemoStore((s) => s.createProcedure);
   const [openReport, setOpenReport] = useState<string | null>(null);
   const [procId, setProcId] = useState<string | null>(null);
 
   const myReports = reports.filter((r) => isMine(r.citizen));
+  // Créés depuis cet appareil (même anonymes : la mairie ne voit pas le nom,
+  // mais l'appareil garde le suivi) + éventuels signalements nominatifs.
+  const myWaste = wasteReports.filter((w) => w.mine || (w.citizen && isMine(w.citizen)));
   const myProcedures = procedures.filter((p) => isMine(p.citizen));
   const proc = procId ? procedures.find((p) => p.id === procId) ?? null : null;
 
   return (
     <div>
       <AppSection title="Mes signalements">
-        {myReports.length === 0 ? (
-          <AppCard><p className="text-sm text-navy-500">Aucun signalement pour l'instant. Créez-en un depuis l'onglet « Signaler ».</p></AppCard>
+        {myReports.length === 0 && myWaste.length === 0 ? (
+          <AppCard><p className="text-sm text-navy-500">Aucun signalement pour l'instant. Créez-en un depuis l'onglet « Signaler ». (Les signalements anonymes ne sont pas rattachés à votre compte.)</p></AppCard>
         ) : (
           <div className="space-y-2.5">
+            {myWaste.map((w) => (
+              <AppCard key={w.id} onClick={() => setOpenReport(openReport === w.id ? null : w.id)}>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">{WASTE_KIND_EMOJI[w.kind]}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-navy-900">{w.title}</p>
+                    <p className="text-xs text-navy-500">{w.ref} · {WASTE_KIND_LABEL[w.kind]}{w.anonymous ? " · anonyme" : ""}</p>
+                  </div>
+                  <StatusBadge tone={wasteTone[w.status]} dot>{WASTE_STATUS_LABEL[w.status]}</StatusBadge>
+                  <ChevronRight className={cn("h-4 w-4 text-navy-300 transition", openReport === w.id && "rotate-90")} />
+                </div>
+                {openReport === w.id && (
+                  <div className="mt-3 border-t border-navy-900/8 pt-3">
+                    <LightSteps steps={wasteSteps(w.status)} />
+                    {w.status === "resolu" && w.photoAfter && (
+                      <p className="mt-2 rounded-lg bg-lime/15 px-2.5 py-1.5 text-xs font-medium" style={{ color: "#3f6212" }}>
+                        📸 Photo « après » jointe par l'équipe : lieu nettoyé.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </AppCard>
+            ))}
             {myReports.map((r) => (
               <AppCard key={r.id} onClick={() => setOpenReport(openReport === r.id ? null : r.id)}>
                 <div className="flex items-center gap-2">

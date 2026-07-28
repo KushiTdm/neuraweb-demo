@@ -20,7 +20,7 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://connected-suite.neuraweb.fr"),
+  metadataBase: new URL("https://demo.neuraweb.fr"),
   title: {
     default: "NeuraWeb Connected Suite — Démo web + mobile connectée",
     template: "%s · NeuraWeb Connected Suite",

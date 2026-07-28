@@ -16,7 +16,9 @@ interface UIState {
   dismiss: (id: string) => void;
   contactOpen: boolean;
   contactContext?: string;
-  openContact: (context?: string) => void;
+  /** Origine de l'ouverture : 'contact' (CTA) ou 'assistant' (escalade chat). */
+  contactSource?: "contact" | "assistant";
+  openContact: (context?: string, source?: "contact" | "assistant") => void;
   closeContact: () => void;
 }
 
@@ -29,7 +31,8 @@ export const useUIStore = create<UIState>((set) => ({
   },
   dismiss: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
   contactOpen: false,
-  openContact: (context) => set({ contactOpen: true, contactContext: context }),
+  openContact: (context, source = "contact") =>
+    set({ contactOpen: true, contactContext: context, contactSource: source }),
   closeContact: () => set({ contactOpen: false }),
 }));
 
@@ -38,7 +41,7 @@ export function toast(message: string, tone: ToastTone = "info") {
   useUIStore.getState().push(message, tone);
 }
 
-/** Ouvre la fenêtre de contact (prise de contact mockée). */
-export function openContact(context?: string) {
-  useUIStore.getState().openContact(context);
+/** Ouvre la fenêtre de contact (formulaire de lead réel → /api/lead). */
+export function openContact(context?: string, source: "contact" | "assistant" = "contact") {
+  useUIStore.getState().openContact(context, source);
 }

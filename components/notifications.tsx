@@ -56,8 +56,11 @@ export function NotificationBell({
       {open && (
         <div
           className={cn(
-            "absolute right-0 top-full z-50 mt-2 w-80 max-w-[86vw] overflow-hidden rounded-2xl border shadow-2xl",
-            light ? "border-navy-900/10 bg-white" : "border-white/12 bg-navy-900",
+            "absolute right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border shadow-2xl",
+            // Dans le téléphone (thème clair), l'écran fait ~310 px : w-80 débordait
+            // et coupait le panneau. On reste plus étroit que l'écran hôte, et on
+            // fixe la couleur de base (le header parent est en text-white).
+            light ? "w-[264px] border-navy-900/10 bg-white text-navy-900" : "w-80 max-w-[86vw] border-white/12 bg-navy-900 text-white",
           )}
         >
           <div className={cn("flex items-center justify-between border-b px-3 py-2.5", light ? "border-navy-900/10" : "border-white/10")}>
@@ -87,11 +90,11 @@ export function NotificationBell({
                     !n.read && (light ? "bg-sky-50" : "bg-white/5"),
                   )}
                 >
-                  <span className="mt-0.5">{toneIcon(n.tone)}</span>
+                  <span className="mt-0.5 shrink-0">{toneIcon(n.tone)}</span>
                   <div className="min-w-0 flex-1">
-                    <p className={cn("text-sm font-medium", light ? "text-navy-900" : "text-white")}>{n.title}</p>
-                    <p className={cn("text-xs", light ? "text-navy-500" : "text-white/55")}>{n.body}</p>
-                    <RelativeTime iso={n.ts} className={cn("text-[11px]", light ? "text-navy-400" : "text-white/35")} />
+                    <p className={cn("text-sm font-medium leading-snug", light ? "text-navy-900" : "text-white")}>{n.title}</p>
+                    <p className={cn("line-clamp-2 text-xs leading-snug", light ? "text-navy-500" : "text-white/55")}>{n.body}</p>
+                    <RelativeTime iso={n.ts} className={cn("block text-[11px]", light ? "text-navy-400" : "text-white/35")} />
                   </div>
                 </div>
               ))

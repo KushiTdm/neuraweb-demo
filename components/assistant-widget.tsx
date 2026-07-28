@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { Bot, Send, Sparkles, X } from "lucide-react";
+import { Bot, Send, Sparkles, X, MessageSquarePlus } from "lucide-react";
 import { verticalFromPath, VERTICALS } from "@/lib/verticals";
-import { answerFor, getScript } from "@/lib/assistant";
+import { answerFor, getScript, wantsHuman } from "@/lib/assistant";
+import { openContact } from "@/lib/ui-store";
 import { aiLatency, cn, sleep } from "@/lib/utils";
 
 interface Msg {
@@ -36,15 +37,21 @@ export function AssistantWidget() {
   const [messages, setMessages] = useState<Msg[]>(() => [{ id: 0, role: "bot", text: script.greeting }]);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
+  const [showCta, setShowCta] = useState(false);
   const [convVertical, setConvVertical] = useState(vertical);
   const idRef = useRef(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const nextId = () => ++idRef.current;
 
+  // Ouvre le vrai formulaire de lead avec le contexte du secteur (source = assistant).
+  const openExpert = () =>
+    openContact(vertical ? `Assistant — ${VERTICALS[vertical].name}` : "Assistant — démo", "assistant");
+
   // réinitialise la conversation au changement de secteur (pattern « previous prop », sans effet)
   if (convVertical !== vertical) {
     setConvVertical(vertical);
     setMessages([{ id: 0, role: "bot", text: script.greeting }]);
+    setShowCta(false);
   }
 
   useEffect(() => {
@@ -60,6 +67,8 @@ export function AssistantWidget() {
     const reply = answerFor(vertical, text);
     setTyping(false);
     setMessages((m) => [...m, { id: nextId(), role: "bot", text: reply }]);
+    // Intention « parler à un humain / devis » → met en avant le vrai formulaire.
+    if (wantsHuman(text)) setShowCta(true);
   };
 
   return (
@@ -157,6 +166,20 @@ export function AssistantWidget() {
                 ))}
               </div>
             )}
+
+            {/* CTA lead réel — toujours accessible, mis en avant après une demande de contact */}
+            <button
+              onClick={openExpert}
+              className={cn(
+                "no-print flex items-center justify-center gap-1.5 border-t border-white/10 px-3 py-2 text-sm font-semibold transition",
+                showCta
+                  ? "bg-gradient-to-r from-sky-400 to-cyan-500 text-navy-950"
+                  : "bg-navy-900 text-sky-300 hover:bg-white/5",
+              )}
+            >
+              <MessageSquarePlus className="h-4 w-4" />
+              Discuter de votre projet
+            </button>
 
             {/* input */}
             <form

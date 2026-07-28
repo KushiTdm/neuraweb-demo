@@ -23,24 +23,24 @@ npm run lint       # ESLint
 npm run typecheck  # tsc --noEmit
 ```
 
-## Déploiement — sous-domaine Vercel (`demo.neuraweb.tech`)
+## Déploiement — sous-domaine Vercel (`demo.neuraweb.fr`)
 
-La démo se déploie comme un **projet Vercel distinct** du site principal (`neuraweb.tech`),
-servi sur le sous-domaine `demo.neuraweb.tech`.
+La démo se déploie comme un **projet Vercel distinct** du site principal (`neuraweb.fr`),
+servi sur le sous-domaine `demo.neuraweb.fr`.
 
 1. **Nouveau projet Vercel** pointant sur ce dossier (`appMobile/`). Si le repo est un monorepo,
    régler *Settings → Build & Development → Root Directory* = `appMobile`. Build `next build`
    (Turbopack par défaut), aucune variable d'env requise (tout est mocké).
-2. **Domaine** : *Settings → Domains → Add* `demo.neuraweb.tech`.
-3. **DNS** (chez le registrar de `neuraweb.tech`) : ajouter `CNAME  demo  →  cname.vercel-dns.com`
-   (valeur exacte affichée par Vercel). L'apex `neuraweb.tech` reste sur le projet principal —
+2. **Domaine** : *Settings → Domains → Add* `demo.neuraweb.fr`.
+3. **DNS** (chez le registrar de `neuraweb.fr`) : ajouter `CNAME  demo  →  cname.vercel-dns.com`
+   (valeur exacte affichée par Vercel). L'apex `neuraweb.fr` reste sur le projet principal —
    aucun conflit, le sous-domaine est indépendant. SSL auto-provisionné par Vercel.
 4. **Côté site principal** : l'URL est centralisée dans `project/lib/site-config.ts`
-   (`DEMO_URL = 'https://demo.neuraweb.tech'`), consommée par `project/components/demo-cta.tsx`
+   (`DEMO_URL = 'https://demo.neuraweb.fr'`), consommée par `project/components/demo-cta.tsx`
    et le header. Changer de sous-domaine = modifier cette seule constante.
 
 > Le middleware `proxy.ts` et la redirection `www→apex` du site principal ne s'appliquent qu'à
-> l'hôte `neuraweb.tech` : ils n'affectent pas `demo.neuraweb.tech`.
+> l'hôte `neuraweb.fr` : ils n'affectent pas `demo.neuraweb.fr`.
 
 ## Stack (2026)
 

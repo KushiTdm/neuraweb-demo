@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { FlaskConical, RotateCcw, X, Sparkles } from "lucide-react";
+import { FlaskConical, RotateCcw, X, Sparkles, ArrowLeft } from "lucide-react";
 import { useDemoStore } from "@/lib/store";
+import { NEURAWEB_URL } from "@/lib/site";
 
 export function DemoBanner() {
   const [open, setOpen] = useState(true);
@@ -17,13 +18,23 @@ export function DemoBanner() {
 
   if (!open) {
     return (
-      <button
-        onClick={() => setOpen(true)}
-        className="no-print fixed bottom-4 left-4 z-[60] flex items-center gap-2 rounded-full border border-white/15 bg-navy-900/90 px-3 py-1.5 text-xs text-sky-300 shadow-lg backdrop-blur"
-      >
-        <FlaskConical className="h-3.5 w-3.5" />
-        Mode démo
-      </button>
+      <div className="no-print fixed bottom-4 left-4 z-[60] flex items-center gap-1.5 rounded-full border border-white/15 bg-navy-900/90 px-1.5 py-1.5 text-xs shadow-lg backdrop-blur">
+        <button
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-2 rounded-full px-2 py-0.5 text-sky-300 transition hover:bg-white/10"
+        >
+          <FlaskConical className="h-3.5 w-3.5" />
+          Mode démo
+        </button>
+        {/* Retour toujours disponible, même bannière masquée. */}
+        <a
+          href={NEURAWEB_URL}
+          className="flex items-center gap-1 rounded-full border border-white/15 px-2 py-0.5 text-white/70 transition hover:border-sky-400/50 hover:text-white"
+        >
+          <ArrowLeft className="h-3 w-3" />
+          neuraweb.fr
+        </a>
+      </div>
     );
   }
 
@@ -46,6 +57,14 @@ export function DemoBanner() {
             <Sparkles className="h-3.5 w-3.5" /> Réinitialisée
           </span>
         )}
+        <a
+          href={NEURAWEB_URL}
+          className="flex items-center gap-1.5 rounded-full border border-white/15 px-2.5 py-1 text-white/80 transition hover:border-sky-400/50 hover:text-white"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Retour sur NeuraWeb</span>
+          <span className="sm:hidden">NeuraWeb</span>
+        </a>
         <button
           onClick={handleReset}
           className="flex items-center gap-1.5 rounded-full border border-white/15 px-2.5 py-1 text-white/80 transition hover:border-sky-400/50 hover:text-white"

@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { isoFromNow, uid } from "./utils";
-import { makeSeed, procedureDocuments, procedureRef, type DemoSeed } from "./mocks";
+import { EQUIPMENT_BY_KIND, makeSeed, procedureDocuments, procedureRef, type DemoSeed } from "./mocks";
 import { SERVICE_KIND_LABEL } from "./verticals";
 import type {
   Audience,
@@ -18,8 +18,13 @@ import type {
   ServiceKind,
   ServiceStatus,
   VerticalId,
+  WasteFiliere,
+  WasteKind,
+  WasteModeration,
+  WastePriority,
+  WasteStatus,
 } from "./types";
-import { ORDER_STATUS_LABEL } from "./verticals";
+import { ORDER_STATUS_LABEL, WASTE_KIND_LABEL, WASTE_PRIORITY_LABEL, WASTE_STATUS_LABEL } from "./verticals";
 
 interface PresentationState {
   running: boolean;
@@ -36,6 +41,17 @@ interface DemoState extends DemoSeed {
   /* internes */
   _emit: (n: Omit<AppNotification, "id" | "ts" | "read">) => void;
   _log: (vertical: VerticalId, side: Audience, label: string) => void;
+
+  /* Collectivité — propreté & déchets */
+  createWasteReport: (input: { kind: WasteKind; title?: string; address: string; anonymous: boolean; citizen?: string; x?: number; y?: number }) => string;
+  confirmWasteReport: (id: string) => void;
+  qualifyWasteReport: (id: string, priority: WastePriority) => void;
+  assignWasteAgent: (id: string, agent: string) => void;
+  toggleWasteEquipment: (id: string, item: string) => void;
+  setWasteStatus: (id: string, status: WasteStatus) => void;
+  closeWasteReport: (id: string) => void;
+  redirectWasteFiliere: (id: string, filiere: WasteFiliere) => void;
+  moderateWasteReport: (id: string, decision: Exclude<WasteModeration, "en_attente">) => void;
 
   /* Collectivité */
   createReport: (input: { title: string; category: ReportCategory; address: string; citizen?: string }) => string;
@@ -77,6 +93,9 @@ interface DemoState extends DemoSeed {
   stopPresentation: () => void;
 }
 
+/** Clé localStorage du store persisté — utilisée aussi pour la synchro entre onglets. */
+export const STORE_STORAGE_KEY = "neuraweb-connected-suite";
+
 let presentationTimers: ReturnType<typeof setTimeout>[] = [];
 function clearPresentationTimers() {
   presentationTimers.forEach(clearTimeout);
@@ -105,6 +124,140 @@ export const useDemoStore = create<DemoState>()(
             ...s.activity,
           ].slice(0, 60),
         })),
+
+      /* ── Collectivité : propreté & déchets ───────────────────────────── */
+      createWasteReport: (input) => {
+        const id = uid("was");
+        const ref = `PRO-${1207 + Math.floor(Math.random() * 800)}`;
+        const title = input.title?.trim() || `${WASTE_KIND_LABEL[input.kind]} à traiter`;
+        set((s) => ({
+          wasteReports: [
+            {
+              id,
+              ref,
+              kind: input.kind,
+              title,
+              address: input.address,
+              status: "nouveau" as const,
+              anonymous: input.anonymous,
+              citizen: input.anonymous ? undefined : input.citizen ?? "Vous (citoyen démo)",
+              mine: true,
+              confirmations: 0,
+              equipment: [],
+              hasPhoto: true,
+              moderation: "validee" as const,
+              distanceM: 40 + Math.floor(Math.random() * 300),
+              x: input.x ?? 20 + Math.random() * 60,
+              y: input.y ?? 20 + Math.random() * 55,
+              createdAt: new Date().toISOString(),
+            },
+            ...s.wasteReports,
+          ],
+        }));
+        get()._emit({ vertical: "collectivite", audience: "admin", title: "Signalement propreté à qualifier", body: `${title} — ${input.address}`, tone: "warn" });
+        get()._log("collectivite", "app", `Signalement propreté « ${title} » créé${input.anonymous ? " (anonyme)" : ""}`);
+        return id;
+      },
+      confirmWasteReport: (id) => {
+        set((s) => ({ wasteReports: s.wasteReports.map((w) => (w.id === id ? { ...w, confirmations: w.confirmations + 1 } : w)) }));
+        const w = get().wasteReports.find((x) => x.id === id);
+        if (!w) return;
+        get()._log("collectivite", "app", `${w.ref} confirmé par un autre citoyen (+${w.confirmations})`);
+        if (w.confirmations === 3) {
+          get()._emit({ vertical: "collectivite", audience: "admin", title: "Signalement corroboré ×3", body: `${w.ref} — ${w.title} : 3 citoyens confirment.`, tone: "warn" });
+        }
+      },
+      qualifyWasteReport: (id, priority) => {
+        set((s) => ({
+          wasteReports: s.wasteReports.map((w) =>
+            w.id === id
+              ? {
+                  ...w,
+                  priority,
+                  status: w.status === "nouveau" ? ("qualifie" as const) : w.status,
+                  equipment: w.equipment.length ? w.equipment : EQUIPMENT_BY_KIND[w.kind],
+                }
+              : w,
+          ),
+        }));
+        const w = get().wasteReports.find((x) => x.id === id);
+        if (!w) return;
+        get()._log("collectivite", "admin", `${w.ref} qualifié « ${WASTE_PRIORITY_LABEL[priority]} » par un agent`);
+        get()._emit({ vertical: "collectivite", audience: "app", title: "Signalement pris en compte 👀", body: `${w.ref} — ${w.title} : examiné et qualifié par un agent.`, tone: "info" });
+      },
+      assignWasteAgent: (id, agent) => {
+        set((s) => {
+          const nextOrder = Math.max(0, ...s.wasteReports.filter((w) => w.assignedTo === agent).map((w) => w.tourOrder ?? 0)) + 1;
+          return {
+            wasteReports: s.wasteReports.map((w) =>
+              w.id === id
+                ? {
+                    ...w,
+                    assignedTo: agent,
+                    tourOrder: w.assignedTo === agent ? w.tourOrder : nextOrder,
+                    status: w.status === "nouveau" || w.status === "qualifie" ? ("planifie" as const) : w.status,
+                    equipment: w.equipment.length ? w.equipment : EQUIPMENT_BY_KIND[w.kind],
+                  }
+                : w,
+            ),
+          };
+        });
+        const w = get().wasteReports.find((x) => x.id === id);
+        if (!w) return;
+        get()._log("collectivite", "admin", `${w.ref} assigné à ${agent}`);
+        get()._emit({ vertical: "collectivite", audience: "app", title: "Intervention planifiée 🗓️", body: `${w.ref} — ${w.title} : une équipe va intervenir.`, tone: "info" });
+      },
+      toggleWasteEquipment: (id, item) => {
+        set((s) => ({
+          wasteReports: s.wasteReports.map((w) =>
+            w.id === id
+              ? { ...w, equipment: w.equipment.includes(item) ? w.equipment.filter((e) => e !== item) : [...w.equipment, item] }
+              : w,
+          ),
+        }));
+      },
+      setWasteStatus: (id, status) => {
+        set((s) => ({ wasteReports: s.wasteReports.map((w) => (w.id === id ? { ...w, status } : w)) }));
+        const w = get().wasteReports.find((x) => x.id === id);
+        if (!w) return;
+        get()._log("collectivite", "admin", `${w.ref} → ${WASTE_STATUS_LABEL[status]}`);
+        if (status === "en_cours") {
+          get()._emit({ vertical: "collectivite", audience: "app", title: "Équipe sur place 🔧", body: `${w.ref} — ${w.title} : intervention en cours.`, tone: "info" });
+        }
+      },
+      closeWasteReport: (id) => {
+        set((s) => ({
+          wasteReports: s.wasteReports.map((w) =>
+            w.id === id ? { ...w, status: "resolu" as const, photoAfter: true, resolvedAt: new Date().toISOString() } : w,
+          ),
+        }));
+        const w = get().wasteReports.find((x) => x.id === id);
+        if (!w) return;
+        get()._log("collectivite", "admin", `${w.ref} clôturé — photo du lieu propre jointe`);
+        get()._emit({ vertical: "collectivite", audience: "app", title: "Signalement résolu ✅", body: `${w.ref} — ${w.title} : lieu nettoyé, photo « après » disponible. Merci pour votre vigilance 🌱`, tone: "success" });
+      },
+      redirectWasteFiliere: (id, filiere) => {
+        set((s) => ({ wasteReports: s.wasteReports.map((w) => (w.id === id ? { ...w, filiere } : w)) }));
+        const w = get().wasteReports.find((x) => x.id === id);
+        if (!w) return;
+        const label: Record<WasteFiliere, string> = { collecte: "collecte classique", recyclage: "filière recyclage", ressourcerie: "Ressourcerie du Beffroi" };
+        get()._log("collectivite", "admin", `${w.ref} orienté vers ${label[filiere]}`);
+        if (filiere === "ressourcerie" || filiere === "recyclage") {
+          get()._emit({ vertical: "collectivite", audience: "app", title: "Seconde vie pour ce déchet ♻️", body: `${w.ref} — ${w.title} : orienté vers la ${label[filiere]} plutôt que la décharge.`, tone: "success" });
+        }
+      },
+      moderateWasteReport: (id, decision) => {
+        set((s) => ({ wasteReports: s.wasteReports.map((w) => (w.id === id ? { ...w, moderation: decision } : w)) }));
+        const w = get().wasteReports.find((x) => x.id === id);
+        if (!w) return;
+        const msg =
+          decision === "validee"
+            ? `${w.ref} validé par la modération humaine`
+            : decision === "rejetee_delation"
+              ? `${w.ref} rejeté — vise une personne (règle anti-délation)`
+              : `${w.ref} rejeté — photo hors sujet`;
+        get()._log("collectivite", "admin", msg);
+      },
 
       /* ── Collectivité ────────────────────────────────────────────────── */
       createReport: (input) => {
@@ -410,10 +563,11 @@ export const useDemoStore = create<DemoState>()(
         if (vertical === "collectivite") {
           let id = "";
           steps = [
-            { caption: "📱 Un citoyen signale un trottoir dégradé depuis l'app…", run: () => { id = get().createReport({ title: "Trottoir dégradé signalé en direct", category: "voirie", address: "Rue de la Démo", citizen: "Citoyen démo" }); } },
-            { caption: "🖥️ La mairie réceptionne et assigne aux services techniques", run: () => get().assignReport(id, "Services techniques") },
-            { caption: "🔧 Intervention en cours côté back-office", run: () => get().setReportStatus(id, "en_cours") },
-            { caption: "✅ Problème résolu — le citoyen est notifié sur son téléphone", run: () => get().setReportStatus(id, "resolu") },
+            { caption: "📱 Un citoyen photographie un dépôt sauvage et le signale en 3 étapes…", run: () => { id = get().createWasteReport({ kind: "depot_sauvage", title: "Dépôt sauvage signalé en direct", address: "Rue de la Démo", anonymous: true }); } },
+            { caption: "👀 Un agent examine la photo et qualifie la priorité (l'humain décide)", run: () => get().qualifyWasteReport(id, "moyenne") },
+            { caption: "🚛 Assignation à la tournée propreté — matériel préparé (gants, pelle, benne)", run: () => get().assignWasteAgent(id, "Tournée propreté A") },
+            { caption: "🔧 L'équipe est sur place, intervention en cours", run: () => get().setWasteStatus(id, "en_cours") },
+            { caption: "✅ Lieu nettoyé : clôture avec photo « après » — le citoyen est notifié 🌱", run: () => get().closeWasteReport(id) },
           ];
         } else if (vertical === "restaurant") {
           let id = "";
@@ -457,15 +611,16 @@ export const useDemoStore = create<DemoState>()(
       },
     }),
     {
-      name: "neuraweb-connected-suite",
-      // v2 : le modèle Procedure gagne documents/messages/createdAt + statut réservation « annulee ».
+      name: STORE_STORAGE_KEY,
+      // v3 : module « Propreté & déchets » (wasteReports).
       // On repart d'un seed frais pour les états persistés antérieurs (démo, donnée non critique).
-      version: 2,
+      version: 3,
       migrate: () => makeSeed() as unknown as DemoState,
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       partialize: (s) => ({
         reports: s.reports,
+        wasteReports: s.wasteReports,
         roomBookings: s.roomBookings,
         procedures: s.procedures,
         orders: s.orders,
