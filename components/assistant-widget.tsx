@@ -159,28 +159,28 @@ export function AssistantWidget() {
               )}
             </div>
 
-            {/* suggestions — relance après chaque réponse (scroll horizontal) */}
+            {/* suggestions — relance après chaque réponse (repliées sur plusieurs lignes) */}
             {!typing && (
-              <div className="flex items-center gap-1.5 overflow-x-auto border-t border-white/8 bg-surface px-3 py-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex flex-wrap gap-1.5 border-t border-white/8 bg-surface px-3 py-2">
+                {script.suggestions.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => ask(s)}
+                    className="rounded-full border border-navy-900/15 bg-white px-2.5 py-1 text-xs text-navy-700 transition hover:border-sky-400 hover:text-navy-900"
+                  >
+                    {s}
+                  </button>
+                ))}
                 {messages.length > 1 && (
                   <button
                     onClick={restart}
                     aria-label="Recommencer la conversation"
-                    className="flex shrink-0 items-center gap-1 rounded-full border border-navy-900/15 bg-white px-2.5 py-1 text-xs font-medium text-navy-600 transition hover:border-sky-400 hover:text-navy-900"
+                    className="flex items-center gap-1 rounded-full border border-navy-900/15 bg-white px-2.5 py-1 text-xs font-medium text-navy-600 transition hover:border-sky-400 hover:text-navy-900"
                   >
                     <RotateCcw className="h-3 w-3" />
                     Recommencer
                   </button>
                 )}
-                {script.suggestions.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => ask(s)}
-                    className="shrink-0 whitespace-nowrap rounded-full border border-navy-900/15 bg-white px-2.5 py-1 text-xs text-navy-700 transition hover:border-sky-400 hover:text-navy-900"
-                  >
-                    {s}
-                  </button>
-                ))}
               </div>
             )}
 
