@@ -86,7 +86,7 @@ const COMMON_FALLBACK =
 const GENERAL: AssistantScript = {
   greeting:
     "Bonjour 👋 Je suis l'assistant de **démonstration** de la NeuraWeb Connected Suite. Je peux vous parler de NeuraWeb (offres, prix, équipe) et vous guider dans cette démo : collectivité, restaurant ou hôtel ? Pour un vrai projet, le bouton « Discuter de votre projet » transmet votre demande à l'équipe.",
-  suggestions: ["Quels sont vos tarifs ?", "Qu'est-ce que cette démo ?", "Discuter de votre projet"],
+  suggestions: ["Quels sont vos tarifs ?", "Qu'est-ce que cette démo ?", "Comment ça marche ?", "Qui est NeuraWeb ?"],
   rules: [
     {
       keywords: ["démo", "demo", "quoi", "c'est quoi", "cette maquette", "à quoi"],
@@ -107,7 +107,7 @@ const SCRIPTS: Record<VerticalId, AssistantScript> = {
   collectivite: {
     greeting:
       "Bonjour 👋 Assistant de **démonstration** — Ville de Néauville. Cette maquette illustre une mairie connectée (signalement, démarche, réservation). Posez-moi vos questions, et pour un vrai projet utilisez « Discuter de votre projet ».",
-    suggestions: ["Comment signaler un problème ?", "Réserver une salle", "Vos tarifs ?", "Discuter de votre projet"],
+    suggestions: ["Comment signaler un problème ?", "Réserver une salle", "Vos tarifs ?", "Qu'est-ce que cette démo ?"],
     rules: [
       { keywords: ["signal", "voirie", "problème", "probleme", "nid"], answer: "Pour signaler (démo) : onglet « Signaler » de l'app → photo + catégorie + localisation. Votre signalement arrive aussitôt dans la console de la mairie, qui suit son avancement jusqu'à résolution. 📍" },
       { keywords: ["réserv", "reserv", "salle", "gymnase", "atelier"], answer: "Dans « Réserver » : salle des fêtes, gymnase, atelier médiathèque… Choisissez un créneau ; la mairie valide et vous êtes notifié·e (démo). 🎉" },
@@ -121,7 +121,7 @@ const SCRIPTS: Record<VerticalId, AssistantScript> = {
   restaurant: {
     greeting:
       "Bonjour et bienvenue à La Table d'Henri 🍽️ Assistant de **démonstration**. Cette maquette montre un restaurant connecté (commande, réservation, fidélité). Questions bienvenues — et « Discuter de votre projet » pour un vrai devis.",
-    suggestions: ["Commander à emporter", "Voir la carte", "Combien coûte un site resto ?", "Discuter de votre projet"],
+    suggestions: ["Commander à emporter", "Voir la carte", "Combien coûte un site resto ?", "Qu'est-ce que cette démo ?"],
     rules: [
       { keywords: ["command", "emporter", "collect", "retrait"], answer: "Commande en click & collect (démo) : choisissez vos plats, payez (paiement simulé) et recevez un **code à 4 chiffres**. La cuisine suit en temps réel : reçue → en préparation → prête. 🛍️" },
       { keywords: ["carte", "menu", "plat", "manger"], answer: "La carte du jour est dans l'onglet « Commander ». Pensez au plat **anti-gaspillage** à prix réduit en fin de service. 🌱" },
@@ -135,7 +135,7 @@ const SCRIPTS: Record<VerticalId, AssistantScript> = {
   hotel: {
     greeting:
       "Bonjour, bienvenue à l'Hôtel Lumen 🏨 Assistant de **démonstration**. Cette maquette illustre un hôtel connecté (check-in, room service, réservation). Posez vos questions — et « Discuter de votre projet » pour parler à l'équipe NeuraWeb.",
-    suggestions: ["Faire mon check-in", "Commander un room service", "Vos tarifs ?", "Discuter de votre projet"],
+    suggestions: ["Faire mon check-in", "Commander un room service", "Vos tarifs ?", "Qu'est-ce que cette démo ?"],
     rules: [
       { keywords: ["check-in", "checkin", "arriv", "clé", "cle"], answer: "Le check-in en ligne (démo) se fait dans « Mon séjour » : il prévient la réception et débloque la **clé digitale** (simulée). Plus de file à l'arrivée. 🔑" },
       { keywords: ["room service", "service", "petit-déj", "manger", "commande"], answer: "Dans « Services », envoyez une demande (room service, ménage, taxi…). Elle tombe dans la console réception qui confirme — vous suivez l'avancement en direct. 🛎️" },
