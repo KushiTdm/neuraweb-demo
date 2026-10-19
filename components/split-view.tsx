@@ -128,7 +128,7 @@ function TabButton({ active, onClick, icon, children }: { active: boolean; onCli
       onClick={onClick}
       className={cn(
         "flex flex-1 items-center justify-center gap-2 rounded-lg px-3 py-2 font-medium transition",
-        active ? "bg-gradient-to-r from-sky-400 to-cyan-500 text-navy-950" : "text-white/60 hover:text-white",
+        active ? "bg-navy-100 text-navy-950" : "text-white/60 hover:text-white",
       )}
     >
       {icon}

@@ -4,6 +4,7 @@ import { type LucideIcon } from "lucide-react";
 import { VERTICALS } from "@/lib/verticals";
 import type { VerticalId } from "@/lib/types";
 import { NotificationBell } from "./notifications";
+import { VerticalIcon } from "@/components/brand/icons";
 import { cn } from "@/lib/utils";
 
 export interface AdminModule {
@@ -46,7 +47,7 @@ export function AdminShell({
       {/* sidebar */}
       <nav className="flex w-14 shrink-0 flex-col items-center gap-1 border-r border-white/8 bg-navy-950/40 py-3 sm:w-52 sm:items-stretch sm:px-2.5">
         <div className="mb-3 flex items-center gap-2 px-1.5 sm:px-2">
-          <span className="text-xl">{v.emoji}</span>
+          <VerticalIcon id={vertical} className={cn("h-6 w-6", v.styles.text)} />
           <span className="hidden min-w-0 sm:block">
             <span className="block truncate text-sm font-semibold text-white">{v.adminName}</span>
             <span className="block truncate text-[11px] text-white/40">{v.name}</span>

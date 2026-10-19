@@ -7,6 +7,7 @@ import { AssistantWidget } from "@/components/assistant-widget";
 import { StoreHydrator } from "@/components/store-hydrator";
 import { Toaster } from "@/components/toaster";
 import { ContactDialog } from "@/components/contact-dialog";
+import { Attribution } from "@/components/attribution";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -53,15 +54,16 @@ export const metadata: Metadata = {
       "Back-office et expérience client (app mobile ou site web) synchronisés en temps réel. Collectivité, restaurant, hôtel. Démo NeuraWeb.",
     type: "website",
     locale: "fr_FR",
-    images: [{ url: "/assets/og.webp", width: 1672, height: 941, alt: "NeuraWeb Connected Suite" }],
+    siteName: "NeuraWeb Connected Suite",
+    url: "/",
+    images: [{ url: "/assets/og.png", width: 1200, height: 630, alt: "NeuraWeb Connected Suite : hôtel, restaurant et mairie reliés à une application mobile et à un back-office" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "NeuraWeb Connected Suite",
     description: "Démo web + mobile connectée en temps réel.",
-    images: ["/assets/og.webp"],
+    images: ["/assets/og.png"],
   },
-  robots: { index: false, follow: false },
 };
 
 export const viewport: Viewport = {
@@ -77,6 +79,7 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${inter.variable} ${bricolage.variable} ${fraunces.variable} h-full`}>
       <body className="min-h-full antialiased">
+        <Attribution />
         <StoreHydrator />
         <DemoBanner />
         {children}

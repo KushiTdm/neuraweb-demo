@@ -45,7 +45,7 @@ export function DemoStub() {
 
           <button
             onClick={() => openContact(feature)}
-            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-400 to-cyan-500 px-5 py-3 text-sm font-semibold text-navy-950 shadow-lg shadow-sky-500/25 transition hover:brightness-110"
+            className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-navy-100 px-5 py-3 text-sm font-semibold text-navy-950 shadow-lg shadow-black/20 transition hover:bg-white"
           >
             <Send className="h-4 w-4" />
             Demander cette fonctionnalité

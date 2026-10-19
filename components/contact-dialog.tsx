@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Send, Loader2, MailCheck, Sparkles } from "lucide-react";
+import { Send, Loader2, MailCheck } from "lucide-react";
+import { ChatIcon } from "@/components/brand/icons";
+import { getAttribution } from "@/components/attribution";
 import { Modal } from "./modal";
 import { useUIStore } from "@/lib/ui-store";
 
@@ -57,7 +59,7 @@ export function ContactDialog() {
           message,
           sector,
           source: source ?? "contact",
-          context,
+          context: [context, getAttribution()].filter(Boolean).join(" · ").slice(0, 300) || undefined,
           company, // honeypot
         }),
       });
@@ -84,14 +86,14 @@ export function ContactDialog() {
       }}
       title="Discuter de votre projet"
       subtitle="NeuraWeb — agence française, équipe à Hanoï"
-      icon={<Sparkles className="h-5 w-5" />}
+      icon={<ChatIcon className="h-5 w-5" />}
     >
       {sent ? (
         <div className="flex flex-col items-center py-4 text-center">
           <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-lime/15 text-lime">
             <MailCheck className="h-7 w-7" />
           </span>
-          <p className="mt-3 font-display text-lg font-semibold text-white">Demande envoyée 🎉</p>
+          <p className="mt-3 font-display text-lg font-semibold text-white">Demande envoyée</p>
           <p className="mt-1 text-sm text-white/55">
             Merci {name || ""} ! Votre demande a bien été transmise à l'équipe NeuraWeb. Un expert
             vous recontacte sous 48 h ouvrées à l'adresse indiquée.
@@ -101,7 +103,7 @@ export function ContactDialog() {
               close();
               setTimeout(reset, 250);
             }}
-            className="mt-5 rounded-xl bg-gradient-to-r from-sky-400 to-cyan-500 px-5 py-2.5 text-sm font-semibold text-navy-950"
+            className="mt-5 rounded-xl bg-navy-100 px-5 py-2.5 text-sm font-semibold text-navy-950"
           >
             Fermer
           </button>
@@ -152,7 +154,7 @@ export function ContactDialog() {
           <button
             onClick={submit}
             disabled={sending}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-400 to-cyan-500 py-3 text-sm font-semibold text-navy-950 shadow-lg shadow-sky-500/20 disabled:opacity-60"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-navy-100 py-3 text-sm font-semibold text-navy-950 shadow-lg shadow-black/20 hover:bg-white disabled:opacity-60"
           >
             {sending ? <><Loader2 className="h-4 w-4 animate-spin" /> Envoi…</> : <><Send className="h-4 w-4" /> Envoyer ma demande</>}
           </button>

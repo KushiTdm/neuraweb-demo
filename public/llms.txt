@@ -1,0 +1,19 @@
+# NeuraWeb Connected Suite
+
+> Démonstration interactive de NeuraWeb, agence web & IA française immatriculée à Lille (équipe de trois à Hanoï) : un back-office web et une application mobile ou un site client, synchronisés en temps réel. Les données sont fictives et les fonctionnalités simulées.
+
+Canonical: https://demo.neuraweb.fr
+Site principal: https://neuraweb.fr/fr
+
+## Démos
+- [Ville de Néauville (collectivité)](https://demo.neuraweb.fr/c/collectivite): console mairie + application citoyenne (signalements, propreté, réservations, démarches).
+- [La Table d'Henri (restaurant)](https://demo.neuraweb.fr/r/restaurant): écran cuisine + site client (commandes, click & collect, réservations, carte).
+- [Hôtel Lumen (hôtel)](https://demo.neuraweb.fr/h/hotel): console réception + site voyageur (réservation, check-in en ligne, conciergerie).
+
+## Pour faire réaliser un projet comparable
+- [Demander un devis](https://neuraweb.fr/fr/booking): gratuit, réponse sous 48 h ouvrées, contrat et facture français.
+- [Développement web](https://neuraweb.fr/fr/developpement-web) · [Applications mobiles](https://neuraweb.fr/fr/mobile-app-development) · [Automatisation](https://neuraweb.fr/fr/automatisation) · [Intégration IA](https://neuraweb.fr/fr/integration-ia)
+
+## À noter
+- Aucune donnée réelle : les établissements présentés n'existent pas.
+- Seul le formulaire « Discuter de votre projet » envoie une vraie demande à l'équipe.

@@ -5,6 +5,7 @@ import { VERTICALS } from "@/lib/verticals";
 import type { VerticalId } from "@/lib/types";
 import { NotificationBell, LiveToast } from "./notifications";
 import { cn } from "@/lib/utils";
+import { VerticalIcon } from "@/components/brand/icons";
 
 export interface SiteTab {
   key: string;
@@ -52,7 +53,7 @@ export function SiteShell({
 
       <header className="sticky top-0 z-20 border-b border-navy-900/8 bg-white/95 backdrop-blur">
         <div className={cn("flex items-center gap-2 bg-gradient-to-r px-4 py-2.5 text-white", HEADER_GRADIENT[vertical])}>
-          <span className="text-lg leading-none">{v.emoji}</span>
+          <VerticalIcon id={vertical} className="h-6 w-6" />
           <div className="min-w-0">
             <p className="truncate text-sm font-bold leading-tight">{v.appName}</p>
             <p className="truncate text-[10px] text-white/85">{v.clientUrl}</p>

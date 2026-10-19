@@ -10,7 +10,7 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        solid: "bg-gradient-to-r from-sky-400 to-cyan-500 text-navy-950 shadow-lg shadow-sky-500/20 hover:brightness-110",
+        solid: "bg-navy-100 text-navy-950 shadow-lg shadow-black/20 hover:bg-white",
         coral: "bg-coral text-white shadow-lg shadow-coral/20 hover:bg-coral/90",
         outline: "border border-white/15 text-white hover:border-sky-400/50 hover:bg-white/5",
         ghost: "text-white/70 hover:bg-white/8 hover:text-white",

@@ -8,6 +8,7 @@ import { PresentationModeButton, PresentationCaption } from "./presentation-mode
 import { SplitView } from "./split-view";
 import { VERTICALS } from "@/lib/verticals";
 import type { VerticalId } from "@/lib/types";
+import { VerticalIcon } from "@/components/brand/icons";
 
 /** Coque d'un hub vertical : barre + Split View (back-office + surface usager) + mode présentation. */
 export function HubShell({
@@ -45,7 +46,7 @@ export function HubShell({
 
       <main className="mx-auto max-w-7xl px-4 py-5">
         <div className="mb-4 flex items-center gap-2 text-sm text-white/55">
-          <span className="text-lg">{v.emoji}</span>
+          <VerticalIcon id={v.id} className="h-6 w-6 text-sky-300" />
           <p>
             <span className="font-medium text-white">{v.name}</span> — {v.tagline}.
             <span className="ml-1 hidden text-white/40 sm:inline">Agissez sur {clientWord}, observez le back-office (et inversement).</span>

@@ -20,7 +20,7 @@ export function PresentationModeButton({ vertical, className }: { vertical: Vert
         "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-medium transition active:scale-[0.98]",
         running
           ? "bg-coral text-white shadow-lg shadow-coral/20"
-          : "bg-gradient-to-r from-sky-400 to-cyan-500 text-navy-950 shadow-lg shadow-sky-500/20 hover:brightness-110",
+          : "bg-navy-100 text-navy-950 shadow-lg shadow-black/20 hover:bg-white",
         className,
       )}
     >
@@ -46,7 +46,7 @@ export function PresentationCaption({ vertical }: { vertical: VerticalId }) {
           className="pointer-events-none fixed left-1/2 top-14 z-[55] w-[min(92vw,38rem)] -translate-x-1/2"
         >
           <div className="flex items-center gap-3 rounded-2xl border border-white/15 bg-navy-900/90 px-4 py-3 shadow-2xl backdrop-blur">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sky-400 to-cyan-500 text-navy-950">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-navy-100 text-navy-950">
               <Clapperboard className="h-4 w-4" />
             </span>
             <p className="text-sm font-medium text-white">{presentation.caption}</p>

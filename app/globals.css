@@ -114,6 +114,20 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Icônes lucide : même épaisseur de trait (2,2) que les icônes maison et le chatbot de neuraweb.fr */
+.lucide {
+  stroke-width: 2.2;
+}
+
+/* Trois points du lanceur de l'assistant (identique au chatbot de neuraweb.fr) */
+@keyframes nw-typing {
+  0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-1.5px); }
+}
+.nw-typing-dot {
+  animation: nw-typing 1.2s ease-in-out infinite;
+}
+
 /* Titres : H1 en Fraunces Soft Black (comme le site), H2-H6 en Bricolage Grotesque */
 h1 {
   font-family: var(--font-impact);

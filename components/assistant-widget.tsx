@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { Bot, Send, Sparkles, X, MessageSquarePlus, RotateCcw } from "lucide-react";
+import { Send, Sparkles, X, RotateCcw } from "lucide-react";
+import { ChatIcon, ChatLauncherIcon } from "@/components/brand/icons";
 import { verticalFromPath, VERTICALS } from "@/lib/verticals";
 import { answerFor, getScript, wantsHuman } from "@/lib/assistant";
 import { openContact } from "@/lib/ui-store";
@@ -84,8 +85,7 @@ export function AssistantWidget() {
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? "Fermer l'assistant" : "Ouvrir l'assistant IA"}
         className={cn(
-          "no-print fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-xl transition active:scale-95",
-          "bg-gradient-to-br from-sky-400 to-cyan-500 shadow-cyan-500/30",
+          "no-print fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-navy-800 text-navy-100 shadow-xl shadow-black/30 ring-2 ring-navy-100/70 transition hover:scale-105 active:scale-95",
         )}
       >
         <AnimatePresence mode="wait" initial={false}>
@@ -95,7 +95,7 @@ export function AssistantWidget() {
             </motion.span>
           ) : (
             <motion.span key="b" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }}>
-              <Bot className="h-6 w-6" />
+              <ChatLauncherIcon />
             </motion.span>
           )}
         </AnimatePresence>
@@ -114,8 +114,8 @@ export function AssistantWidget() {
           >
             {/* header */}
             <div className="flex items-center gap-2.5 border-b border-white/10 bg-gradient-to-r from-navy-900 to-navy-800 px-4 py-3">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-sky-400 to-cyan-500 text-navy-950">
-                <Bot className="h-5 w-5" />
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-navy-100 text-navy-800">
+                <ChatIcon className="h-5 w-5" />
               </span>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-white">Assistant IA — démo</p>
@@ -190,11 +190,11 @@ export function AssistantWidget() {
               className={cn(
                 "no-print flex items-center justify-center gap-1.5 border-t border-white/10 px-3 py-2 text-sm font-semibold transition",
                 showCta
-                  ? "bg-gradient-to-r from-sky-400 to-cyan-500 text-navy-950"
+                  ? "bg-navy-100 text-navy-950"
                   : "bg-navy-900 text-sky-300 hover:bg-white/5",
               )}
             >
-              <MessageSquarePlus className="h-4 w-4" />
+              <ChatIcon className="h-4 w-4" />
               Discuter de votre projet
             </button>
 
@@ -217,7 +217,7 @@ export function AssistantWidget() {
                 type="submit"
                 disabled={!input.trim() || typing}
                 aria-label="Envoyer"
-                className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-sky-400 to-cyan-500 text-navy-950 disabled:opacity-40"
+                className="flex h-9 w-9 items-center justify-center rounded-xl bg-navy-100 text-navy-950 disabled:opacity-40"
               >
                 <Send className="h-4 w-4" />
               </button>
