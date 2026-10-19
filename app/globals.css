@@ -2,38 +2,60 @@
 
 /* ──────────────────────────────────────────────────────────────────────────
    NeuraWeb Connected Suite — design tokens (Tailwind v4, CSS-first @theme)
-   Palette source of truth: project/tailwind.config.ts
+   Palette : Rich Blue #191265 + Pale Gray #EBEBDF (voir project/docs/brand)
    ────────────────────────────────────────────────────────────────────────── */
 @theme {
-  /* Navy — gamme complète (les nuances claires servent aux apps mobiles :
-     sans elles, text-navy-400/500… ne généraient AUCUN CSS et le texte
-     héritait du blanc du header → notifications illisibles) */
-  --color-navy-50: #f2f6fc;
-  --color-navy-100: #e4ebf7;
-  --color-navy-200: #c9d6ec;
-  --color-navy-300: #9fb1d4;
-  --color-navy-400: #7186ad;
-  --color-navy-500: #4d6288;
-  --color-navy-600: #2f4a7c;
-  --color-navy-700: #1e3a6b;
-  --color-navy-800: #1e2a4a;
-  --color-navy-900: #0e1b3d;
-  --color-navy-950: #070f26;
+  /* Identité 2026 (démo) : paire « Rich Blue #191265 + Pale Gray #EBEBDF ».
+     L'ancienne gamme navy est conservée sous le même nom (les composants n'ont pas changé) :
+     50-300 = tons Pale Gray (apps claires), 800 = Rich Blue exact, 900-950 = fonds sombres (back-offices). */
+  --color-navy-50: #f6f6f1;
+  --color-navy-100: #ebebdf;
+  --color-navy-200: #d2d1d0;
+  --color-navy-300: #a8a6b8;
+  --color-navy-400: #656091;
+  --color-navy-500: #4b4682;
+  --color-navy-600: #3b3579;
+  --color-navy-700: #2c2670;
+  --color-navy-800: #191265;
+  --color-navy-900: #140e4f;
+  --color-navy-950: #0e0a38;
 
-  /* Accents marque (override volontaire des défauts sky/cyan, hex officiels) */
-  --color-sky-400: #5db8f0;
-  --color-cyan-500: #22d3ee;
+  /* Indigo (identité « collectivité ») : bleu-violet plus vif, même teinte que le Rich Blue */
+  --color-indigo-50: #f0effb;
+  --color-indigo-100: #e1dff7;
+  --color-indigo-200: #c4c0ef;
+  --color-indigo-300: #9e98e0;
+  --color-indigo-400: #7770cc;
+  --color-indigo-500: #5148b4;
+  --color-indigo-600: #3c3498;
+  --color-indigo-700: #2c2679;
+  --color-indigo-800: #1f1a5c;
+  --color-indigo-900: #191265;
+  --color-indigo-950: #0e0a38;
 
-  /* CTA chaud / succès / fonds clairs */
+  /* Accents marque : tons Pale Gray / périwinkle (plus de bleu ciel ni de cyan) */
+  --color-sky-100: #f2f2ea;
+  --color-sky-200: #ebebdf;
+  --color-sky-300: #dcdcec;
+  --color-sky-400: #b9b6e3;
+  --color-sky-500: #8f8bd0;
+  --color-sky-600: #5e58b5;
+  --color-cyan-300: #dcdcec;
+  --color-cyan-400: #c8c5ea;
+  --color-cyan-500: #b9b6e3;
+  --color-cyan-600: #8f8bd0;
+
+  /* CTA chaud (alertes) / succès / fonds clairs */
   --color-coral: #ff7a59;
   --color-coral-soft: #ffb088;
   --color-lime: #c5f277;
-  --color-surface: #f7fafd;
-  --color-frost: #e8f4fd;
+  --color-surface: #f6f6f1;
+  --color-frost: #ebebdf;
 
   /* Typo */
   --font-sans: var(--font-inter), system-ui, sans-serif;
-  --font-display: var(--font-sora), system-ui, sans-serif;
+  --font-display: var(--font-bricolage), system-ui, sans-serif;
+  --font-impact: var(--font-fraunces), Georgia, serif;
 
   /* Animations */
   --animate-shimmer: shimmer 2.2s linear infinite;
@@ -87,9 +109,18 @@ html {
 body {
   font-family: var(--font-sans);
   background: var(--color-navy-950);
-  color: #e8eefb;
+  color: #ebebdf;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Titres : H1 en Fraunces Soft Black (comme le site), H2-H6 en Bricolage Grotesque */
+h1 {
+  font-family: var(--font-impact);
+  font-weight: 900;
+}
+h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
 }
 
 ::selection {

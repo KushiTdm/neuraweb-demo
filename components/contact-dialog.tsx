@@ -83,7 +83,7 @@ export function ContactDialog() {
         setTimeout(reset, 250);
       }}
       title="Discuter de votre projet"
-      subtitle="NeuraWeb — Lille, partout en France"
+      subtitle="NeuraWeb — agence française, équipe à Hanoï"
       icon={<Sparkles className="h-5 w-5" />}
     >
       {sent ? (
@@ -94,7 +94,7 @@ export function ContactDialog() {
           <p className="mt-3 font-display text-lg font-semibold text-white">Demande envoyée 🎉</p>
           <p className="mt-1 text-sm text-white/55">
             Merci {name || ""} ! Votre demande a bien été transmise à l'équipe NeuraWeb. Un expert
-            vous recontacte sous 24 h à l'adresse indiquée.
+            vous recontacte sous 48 h ouvrées à l'adresse indiquée.
           </p>
           <button
             onClick={() => {
@@ -156,7 +156,7 @@ export function ContactDialog() {
           >
             {sending ? <><Loader2 className="h-4 w-4 animate-spin" /> Envoi…</> : <><Send className="h-4 w-4" /> Envoyer ma demande</>}
           </button>
-          <p className="text-center text-[11px] text-white/35">Votre demande est transmise à l'équipe NeuraWeb — réponse sous 24 h.</p>
+          <p className="text-center text-[11px] text-white/35">Votre demande est transmise à l'équipe NeuraWeb — réponse sous 48 h ouvrées.</p>
         </div>
       )}
     </Modal>

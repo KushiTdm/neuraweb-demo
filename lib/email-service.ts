@@ -21,16 +21,16 @@ const TO_EMAIL = process.env.TO_EMAIL || "contact@neuraweb.fr";
 
 // Palette de marque NeuraWeb (identique au site principal).
 const COLORS = {
-  primary: "#6366f1",
-  secondary: "#8b5cf6",
-  dark: "#050510",
-  darkCard: "#0f0f1a",
+  primary: "#b9b6e3",
+  secondary: "#2c2679",
+  dark: "#0e0a38",
+  darkCard: "#140e4f",
   text: "#e5e7eb",
   textMuted: "#9ca3af",
   white: "#ffffff",
   border: "rgba(255, 255, 255, 0.06)",
 };
-const GRADIENT_BRAND = `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.secondary} 50%, #a78bfa 100%)`;
+const GRADIENT_BRAND = `linear-gradient(135deg, #191265 0%, ${COLORS.secondary} 100%)`;
 
 export interface DemoLeadEmailData {
   name: string;

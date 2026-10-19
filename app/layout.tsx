@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Sora } from "next/font/google";
+import { Inter, Bricolage_Grotesque } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { DemoBanner } from "@/components/demo-banner";
 import { AssistantWidget } from "@/components/assistant-widget";
@@ -13,9 +14,17 @@ const inter = Inter({
   display: "swap",
 });
 
-const sora = Sora({
-  variable: "--font-sora",
-  subsets: ["latin"],
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+});
+
+// Fraunces Soft Black auto-hébergée (même fichier que le site : latin + vietnamien)
+const fraunces = localFont({
+  src: "./fonts/Fraunces-SoftBlack.woff2",
+  variable: "--font-fraunces",
+  weight: "900",
   display: "swap",
 });
 
@@ -56,7 +65,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#070F26",
+  themeColor: "#0e0a38",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -66,7 +75,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="fr" className={`${inter.variable} ${sora.variable} h-full`}>
+    <html lang="fr" className={`${inter.variable} ${bricolage.variable} ${fraunces.variable} h-full`}>
       <body className="min-h-full antialiased">
         <StoreHydrator />
         <DemoBanner />

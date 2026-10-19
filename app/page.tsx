@@ -20,7 +20,7 @@ import { Eyebrow } from "@/components/ui/primitives";
 import { VERTICAL_LIST } from "@/lib/verticals";
 import type { VerticalId } from "@/lib/types";
 import { openContact } from "@/lib/ui-store";
-import { NEURAWEB_URL } from "@/lib/site";
+import { NEURAWEB_URL, NEURAWEB_LINKS } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 const CARD_IMG: Record<VerticalId, string> = {
@@ -119,12 +119,12 @@ export default function Launcher() {
             Explorer la démo
             <ArrowRight className="h-4 w-4" />
           </Link>
-          <button
-            onClick={() => openContact()}
+          <a
+            href={NEURAWEB_LINKS.booking}
             className="inline-flex items-center gap-2 rounded-full border border-white/20 px-7 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
           >
-            Parler à un expert
-          </button>
+            Demander un devis
+          </a>
         </motion.div>
       </section>
 
@@ -222,13 +222,20 @@ export default function Launcher() {
             <RefreshCw className="h-3.5 w-3.5" />
             Maquette à but d'illustration — fonctionnalités simulées, données fictives.
           </p>
-          <a
-            href={NEURAWEB_URL}
-            className="text-xs text-white/40 transition hover:text-white"
-          >
-            © NeuraWeb — Lille, partout en France. · neuraweb.fr
-          </a>
+          <nav aria-label="NeuraWeb" className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-white/60 sm:justify-end">
+            <a href={NEURAWEB_LINKS.web} className="transition hover:text-white">Développement web</a>
+            <a href={NEURAWEB_LINKS.mobile} className="transition hover:text-white">Applications mobiles</a>
+            <a href={NEURAWEB_LINKS.automation} className="transition hover:text-white">Automatisation</a>
+            <a href={NEURAWEB_LINKS.ai} className="transition hover:text-white">Intégration IA</a>
+            <a href={NEURAWEB_LINKS.sectors} className="transition hover:text-white">Secteurs</a>
+            <a href={NEURAWEB_LINKS.contact} className="transition hover:text-white">Contact</a>
+          </nav>
         </div>
+        <p className="mx-auto mt-3 max-w-6xl text-center text-xs text-white/50 sm:text-left">
+          <a href={NEURAWEB_URL} className="transition hover:text-white">
+            © NeuraWeb — agence web & IA française immatriculée à Lille, équipe à Hanoï · neuraweb.fr
+          </a>
+        </p>
       </footer>
     </div>
   );

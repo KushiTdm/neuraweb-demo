@@ -62,12 +62,12 @@ const NEURAWEB_RULES: { keywords: string[]; answer: string }[] = [
   {
     keywords: ["équipe", "equipe", "qui êtes", "qui etes", "qui est", "fondateur", "nacer", "sandra", "arthur"],
     answer:
-      "NeuraWeb, c'est une équipe resserrée basée à Lille (partout en France en remote) : **Nacer** (fondateur & lead developer), **Sandra** (communication & marketing) et **Arthur** (IA & automatisation).",
+      "NeuraWeb, c'est une équipe de trois, agence immatriculée à Lille et installée cette année à Hanoï : **Nacer** (fondateur & lead developer), **Sandra** (communication & marketing) et **Arthur** (IA & automatisation).",
   },
   {
     keywords: ["où", "ou etes", "lille", "france", "localis", "adresse", "ville"],
     answer:
-      "NeuraWeb est basée à **Lille** (Hauts-de-France) et intervient partout en France en remote (Paris, Lyon, Marseille, Bordeaux, Toulouse…).",
+      "NeuraWeb est une agence française **immatriculée à Lille** (contrat et facture français). L'équipe travaille à distance, cette année depuis **Hanoï**, pour des clients dans le Nord, à Paris, dans toute la France et à l'étranger.",
   },
   {
     keywords: [
@@ -75,13 +75,13 @@ const NEURAWEB_RULES: { keywords: string[]; answer: string }[] = [
       "rdv", "rappel", "rappeler", "téléphone", "telephone", "email", "mail", "joindre", "devis",
     ],
     answer:
-      "Avec plaisir ! Cliquez sur **« Discuter de votre projet »** juste au-dessus : votre demande est transmise directement à l'équipe NeuraWeb, qui vous recontacte sous 24 h. Vous pouvez aussi écrire à contact@neuraweb.fr ou appeler le +33 7 49 77 56 54. 🚀",
+      "Avec plaisir ! Cliquez sur **« Discuter de votre projet »** juste au-dessus : votre demande est transmise directement à l'équipe NeuraWeb, qui vous recontacte sous 48 h. Vous pouvez aussi écrire à contact@neuraweb.fr ou appeler le +33 7 49 77 56 54. 🚀",
   },
 ];
 
 // Message de repli commun : jamais un « échec », toujours une porte de sortie utile.
 const COMMON_FALLBACK =
-  "Je suis l'assistant de **démonstration** : mes réponses sont pré-écrites et couvrent NeuraWeb (offres, prix, équipe) et cette maquette. Pour une question précise ou un vrai projet, cliquez sur **« Discuter de votre projet »** — un expert vous répond sous 24 h. 😊";
+  "Je suis l'assistant de **démonstration** : mes réponses sont pré-écrites et couvrent NeuraWeb (offres, prix, équipe) et cette maquette. Pour une question précise ou un vrai projet, cliquez sur **« Discuter de votre projet »** — un expert vous répond sous 48 h. 😊";
 
 const GENERAL: AssistantScript = {
   greeting:
